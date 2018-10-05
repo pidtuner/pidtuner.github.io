@@ -30,7 +30,7 @@ window.mainVue = new Vue({
           },
           {
             name : "github",
-            url  : "https://github.com/pidtuner",
+            url  : "https://github.com/pidtuner/pidtuner.github.io",
             icon : "github"
           },
           {
