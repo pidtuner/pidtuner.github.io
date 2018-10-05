@@ -1,0 +1,96 @@
+<div class="ui stackable grid pid-tuner-root">
+	<div class="computer only one wide column"></div>
+
+	<div class="tablet only four wide tablet three wide computer column">
+		<div class="ui one column">
+			<div class="row">
+				<div class="ui fluid vertical steps pid-tuner-steps">  
+				  <div v-for="step in all_steps" :class="{
+								   'step'     : true,
+								   'active'   : current_step == step ? true : false,
+								   'disabled' : isStepDisabled(step)
+							   }"
+							   @click="current_step = step; step_loaded = false; if(current_step == latest_step) { next_enabled = false; } else { next_enabled = true; }">
+					<i :class="getIcon(step)"></i>
+					<div class="content">
+					  <div class="title">{{ getTitle(step) }}</div>
+					</div>
+				  </div> 
+				</div>
+			</div>
+			<div class="row pid-tuner-info" v-if="show_message">
+				<div class="sixteen wide column">
+					<div class="ui icon message">
+						<i class="info circle icon step-selected-showifbig"></i>
+						<i class="close icon" ref="close_button"></i>
+						<div class="content">
+							<p v-html="getInfo(current_step)"></p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div :class="{
+                   'twelve wide tablet eleven wide computer column'  : true, 
+                   'ui loading segment' : !step_loaded,
+                 }">
+		<div class="ui stackable grid">
+			<div class="row">
+				<div class="three wide column">
+					<button class="fluid ui blue button" 
+					        v-show="getNumber(current_step) > 1"
+					        @click="on_backClicked()">
+						Back
+					</button>
+				</div>
+				<div class="ten wide column middle aligned content">
+					<h3 class="ui center aligned header">
+						{{ getNumber(current_step) + '. ' + getTitle(current_step) }}
+					</h3>
+				</div>
+				<div class="three wide column">
+					<button class="fluid ui green button" 
+					        v-show="getNumber(current_step) < all_steps.length"
+					        :disabled="!next_enabled"
+					        @click="on_nextClicked()">
+							Next
+					</button>
+				</div>
+			</div>
+			<div class="row">
+				<div class="sixteen wide column">
+					<component :is="getComponent(current_step)"
+							   @latestStep       ="latest_step = current_step"
+							   @enableNext       ="next_enabled = true"
+							   @disableNext      ="next_enabled = false"
+							   @stepLoaded       ="step_loaded = true"
+							   :time             ="time"
+							   :input            ="input"
+							   :output           ="output"
+							   :cached_range_list="cached_range_list"
+							   :selected_range   ="selected_range"
+							   :uniform_time     ="uniform_time"
+							   :uniform_input    ="uniform_input"
+							   :uniform_output   ="uniform_output"
+							   :cached_model_list="cached_model_list"
+							   :selected_model   ="selected_model"
+                               :cached_gains_slider="cached_gains_slider"
+                               :cached_time_slider ="cached_time_slider"
+							   :pid_gains        ="pid_gains"
+                               :pidsim_time      ="pidsim_time"
+                               :pidsim_input     ="pidsim_input"
+                               :pidsim_output    ="pidsim_output"
+                               @updateGainsSlider="(value)=>{cached_gains_slider = value}"
+                               @updateTimeSlider ="(value)=>{cached_time_slider  = value}"
+							   >
+					</component>				
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="computer only one wide column"></div>
+</div>

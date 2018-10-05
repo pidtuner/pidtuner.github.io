@@ -1,0 +1,108 @@
+<div class="ui stackable grid">
+
+  <div class="five wide column">
+    <div class="ui one column grid">
+
+
+		<div class="row step-select-selected-row">
+			<h4 class="ui center aligned header">
+				PID Gains
+			</h4>
+		</div>
+
+		<div class="row ui fluid labeled input tune-pid-gain" v-for="gain in pid_gains">
+		  <div class="ui label tune-pid-label step-selected-showifbig">
+			{{ gain.descrip }}
+		  </div>
+		  <div class="ui label tune-pid-label step-selected-showifsmall">
+			{{ gain.name }}
+		  </div>
+		  <input type        ="number" 
+		         v-model     ="gain.val" 
+		         :readonly   ="!gain.editable" 
+		         :class      ="{ 'tune-pid-readonly' : !gain.editable }"
+		         @keyup.enter="updateGain(gain.name)"
+		  >
+		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
+			{{ gain.units }}
+		  </div>
+		  <i class="pencil large icon tune-pid-editicon" v-show="gain.editable"></i>
+		</div>
+
+		<div class="row step-select-selected-row">
+			<button class="fluid ui button" @click="setOriginalGains()">
+				Reset Gains
+			</button>
+		</div>
+
+		<div class="row ui segment tune-pid-slider">
+		<div class="ui fuild grid container middle aligned" id="tune-pid-sliderdiv-1">
+			<div class="four wide column tune-pid-slidertext">
+				Scale Gains
+			</div>
+			<div class="twelve wide column">
+				<div :class="{'ui'       : true,
+				              'disabled' : !slider_gains_enabled,
+				              'range'    : true
+				             }" ref="slider_gains"></div>	
+			</div>
+		</div>
+		</div>
+
+		<div class="ui divider"></div>
+
+		<div class="row step-select-selected-row">
+			<h4 class="ui center aligned header">
+				Simulation
+			</h4>
+		</div>
+
+<!--
+		<div class="row ui fluid labeled input tune-pid-gain">
+		  <div class="ui label tune-pid-label-2">
+		  	Reference = 
+		  </div>
+		  <input type="number" v-model="step_size">
+		</div>
+
+		<div class="row ui fluid labeled input tune-pid-gain">
+		  <div class="ui label tune-pid-label-2">
+		  	Disturbance = 
+		  </div>
+		  <input type="number" v-model="dist_size">
+		</div>
+-->
+		<div class="row ui segment tune-pid-slider">
+		<div class="ui fuild grid container middle aligned" id="tune-pid-sliderdiv-2">
+			<div class="four wide column tune-pid-slidertext">
+				Scale Time
+			</div>
+			<div class="twelve wide column">
+				<div class="ui range" ref="slider_time"></div>	
+			</div>
+		</div>
+		</div>
+
+
+    </div>
+  </div>
+
+  <div class="eleven wide column">
+	<line-chart :chart-data="output_chart_data" 
+	            :ranges_enabled="false"
+	            :ranges="[]"
+	            :cssClasses="'import-chart'"
+	            >
+	</line-chart>
+	<line-chart :chart-data="input_chart_data"  
+	            :ranges_enabled="false"
+	            :ranges="[]"
+	            :cssClasses="'import-chart'"
+	            >
+	</line-chart>
+
+
+
+  </div>
+
+</div>

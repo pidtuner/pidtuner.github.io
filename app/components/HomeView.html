@@ -1,0 +1,191 @@
+<div class="pusher">
+	<div class="ui inverted vertical masthead center aligned segment home-background">
+		<div class="ui text container">
+			<h1 class="ui header">
+				Tune your PID
+			</h1>
+			<h2 class="home-subtitle">
+				It has never been easier
+			</h2>
+			<div v-on:click="onClicked()" :class="{
+				            'ui huge primary button' : true,
+				            'disabled' : !pid_loaded,
+				          }">
+				Get Started
+				<i class="right arrow icon"></i>
+			</div>
+		</div>
+	</div>
+
+	<div class="ui vertical stripe segment">
+		<div class="ui middle aligned stackable grid container">
+			<div class="row">
+				<div class="eight wide column">
+					<h3 class="ui header">
+						Why
+					</h3>
+					<p>
+						Tuning a
+						<a href="https://en.wikipedia.org/wiki/PID_controller" target="_blank">PID controller</a>
+						can be easily done using a systematic procedure. We just put it in a web application. No more trial and error.
+					</p>
+					<h3 class="ui header">
+						How
+					</h3>
+					<p>
+						Use the
+						<a href="https://en.wikipedia.org/wiki/Step_response" target="_blank">step response</a>
+						data from your system and follow the wizard step-by-step. On each step you are free to make decisions to improve your tuning,
+						but the defaults will work just fine.
+					</p>
+				</div>
+				<div class="six wide right floated column">
+					<img class="ui large bordered rounded image home-centered" src="./assets/models/pid_block.svg" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="ui vertical stripe segment">
+		<div class="ui grid container">
+			<div class="row">
+				<h3 class="ui header">
+					Sponsors
+				</h3>
+			</div>
+			<div class="row">
+				<p>
+					These are the people helping us maintaining this project alive and free. Thank you for
+					<a href="https://www.patreon.com/pidtuner" target="_blank"> your support</a>.
+				</p>
+			</div>
+		</div>
+		<div class="ui middle aligned stackable grid container">
+			<div class="row">
+				<div class="eight wide column home-gold-column">
+
+					<h4 class="ui header">
+						Gold Sponsors
+					</h4>
+
+					<div :class="{
+						           'ui'   : true,
+						           'two'  : window_width >  768,
+					               'four' : window_width <= 768,
+					               'doubling cards' : true
+					             }">
+						<a v-for="sponsor in list_sponsors" class="card home-sponsor-card" :href="sponsor.url" target="_blank">
+							<div class="content home-sponsor-content">
+								<div class="ui stackable two column grid container home-sponsor-grid" style="margin-left: auto !important; margin-right: auto !important;">
+									<div class="ui middle aligned column home-imgcard">
+										<img class="tiny ui image" :src="sponsor.logo">
+									</div>
+									<div class="column">
+										<h4 class="ui header">{{ sponsor.title }}</h4>
+										<div class="description">
+											{{ sponsor.descrip }}
+										</div>
+									</div>
+								</div>
+							</div>
+						</a>
+					</div>
+
+				</div>
+				<div class="six wide right floated column home-platinum">
+
+					<h4 class="ui header home-platinum-header">
+						Platinum Sponsors
+					</h4>
+					<div class="ui middle aligned one column grid container">
+
+						<div class="ui list">
+							<a class="item" v-for="n in 8" href="https://www.patreon.com/pidtuner" target="_blank">
+								<img class="ui avatar image" src="./assets/logo/logo.svg">
+								<div class="content">
+									<a class="header">Sponsor</a>
+									<div class="description">Platinum sponsors appear here.</div>
+								</div>
+							</a>
+						</div>
+
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+
+		<!--div class="ui grid container">
+			<div class="row">
+				<p>
+					Click here to see the complete list of sponsors.
+				</p>
+			</div>
+		</div-->
+
+	</div>
+
+	<div class="ui vertical stripe segment">
+		<div class="ui middle aligned stackable grid container">
+			<div class="row">
+				<div class="eight wide column">
+					<img class="ui large bordered rounded image home-centered" src="./assets/gifs/wizard.gif" />
+				</div>
+
+				<div class="six wide right floated column">
+					<h3 class="ui header">
+						Features
+					</h3>
+					<p>
+						<i class="favorite check icon"></i>Copy-paste data import</p>
+					<p>
+						<i class="favorite check icon"></i>Data validation and visualization</p>
+					<p>
+						<i class="favorite check icon"></i>Multi-model data fit</p>
+					<p>
+						<i class="favorite check icon"></i>Auto-tuned PID gains</p>
+					<p>
+						<i class="favorite check icon"></i>Interactive closed-loop simulations</p>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+	<div class="ui vertical stripe segment">
+		<div class="ui grid container">
+			<div class="row">
+				<h3 class="ui header">
+					Tech Stack
+				</h3>
+			</div>
+			<div class="row">
+				<p>
+					This web application would not have been possible without all the amazing projects listed below. Thank you!
+				</p>
+			</div>
+		</div>
+		<div class="ui grid container">
+		<div class="ui three doubling cards">
+				<a class="ui card home-tech-card" v-for="tstack in list_techstack" :href="tstack.url" target="_blank">
+					<div class="content home-tech-content">
+						<div class="ui stackable two column grid home-tech-grid" style="margin-top: auto; margin-bottom: auto;">
+							<div class="ui middle aligned column home-imgcard">
+								<img class="tiny ui image" :src="tstack.logo">
+							</div>
+							<div class="column">
+								<h4 class="ui header">{{ tstack.title }}</h4>
+								<div class="description">
+									{{ tstack.descrip }}
+								</div>
+							</div>
+						</div>
+					</div>
+				</a>
+		</div>
+		</div>
+	</div>
+
+
+</div>

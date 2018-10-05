@@ -1,0 +1,98 @@
+<div class="ui stackable grid">
+
+  <div class="five wide column">
+    <div class="ui one column grid">
+
+      <div class="row step-select-selected-row">
+		<h4 class="ui center aligned header">
+			Selected Time Range
+		</h4>
+		<!-- if big -->
+		<div class="ui stackable grid step-select-selected step-selected-showifbig">
+		  <div class="eight wide column">
+			<div class="fluid ui labeled input">	  
+			  <div class="ui label"><i class="sign-out icon"></i>Start</div>
+			  <input type="text" readonly onfocus="this.blur();" :value="getLabel(uniform_time[selected_range[0]])">
+			</div> 
+		  </div>
+		  <div class="eight wide column">
+			<div class="fluid ui right labeled input">	 
+			  <input type="text" readonly onfocus="this.blur();" :value="getLabel(uniform_time[selected_range[1]])"> 
+			  <div class="ui label">End <i class="sign-in icon"></i></div>
+			</div>
+		  </div>
+		</div>
+
+<div class="ui one column grid step-select-steps step-selected-showifsmall">
+
+	<div class="row step-select-item">
+	  <div class="fluid ui left labeled button" tabindex="0">
+		<a class="ui basic right pointing label step-select-left">
+			{{ getLabel(uniform_time[selected_range[0]]) }}
+		</a>
+		<div class="ui icon button step-select-right">Start</div>
+	  </div>
+	</div>
+
+	<div class="row step-select-item">
+	  <div class="fluid ui left labeled button" tabindex="0">
+		<a class="ui basic right pointing label step-select-left">
+			{{ getLabel(uniform_time[selected_range[1]]) }}
+		</a>
+		<div class="ui icon button step-select-right">End</div>
+	  </div>
+	</div>
+  
+</div>
+
+
+
+
+      </div>
+
+      <div class="ui divider"></div>
+
+      <div class="row select-step-range">
+		<div class="ui one column grid step-select-steps">
+		    <div class="row step-select-item">
+		    <h4 class="ui center aligned header">
+		      Pre-computed Time Ranges
+		    </h4>
+		    </div>
+			<!-- repeats -->
+			<div class="row step-select-item" v-for="range in range_list">
+			  <div class="fluid ui left labeled button" tabindex="0" @click="setRange(range); $emit('latestStep');">
+				<a class="ui basic right pointing label step-select-left">Time Range [{{getLabel(uniform_time[range[0]])}}, {{getLabel(uniform_time[range[1]])}}]</a>
+				<div :class="{
+					           'ui'                : true,
+					           'icon'              : true, 
+					           'button'            : true,
+					           'step-select-right' : true,
+					           'blue'              : isRangeEq(range, selected_range) && using_list_range
+					           }">Select<i class="check icon" v-show="isRangeEq(range, selected_range) && using_list_range"></i></div>
+			  </div>
+			</div>
+		</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="eleven wide column">
+	<line-chart :chart-data="output_chart_data" 
+	            :ranges_enabled="false"
+	            :ranges="ranges"
+	            :cssClasses="'import-chart'"
+                @dragStart="$emit('latestStep');"
+	            >
+	</line-chart>
+	<line-chart :chart-data="input_chart_data"  
+	            :ranges_enabled="false"
+	            :ranges="ranges"
+	            :cssClasses="'import-chart'"
+                @dragStart="$emit('latestStep');"
+	            >
+	</line-chart>
+  </div>
+
+</div>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PID Tuner</title>
+    <link rel="shortcut icon" href="./assets/logo/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.3/semantic.min.css">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/tyleryasaka/semantic-ui-range/master/range.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/handsontable/5.0.2/handsontable.full.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="description" content="PID Tuning for control engineering. Tune PID controller parameters. Ziegler Nichols method.">
+    <meta name="author" content="PID Tuner">
+    <meta name="keywords" content="PID, tuner, tuning, method, control, controller, engineering, ziegler, nichols, proportional, integral, derivative">
+    <meta property="og:title" content="PID Tuner">
+    <meta property="og:description" content="Free PID Controller gains tuning tool.">
+    <meta property="og:image" content="https://pidtuner.com/index.html">
+    <meta property="og:url" content="https://pidtuner.com/assets/snapshot/snapshot.png">
+    <meta property="og:site_name" content="PID Tuner">
+    <meta name="twitter:title" content="PID Tuner">
+    <meta name="twitter:description" content="Free PID Controller gains tuning tool.">
+    <meta name="twitter:image" content="https://pidtuner.com/assets/snapshot/snapshot.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@PidTuner">
+    <meta name="twitter:image:alt" content="Screenshot of PID Tuner">
+
+</head>
+
+<body>
+
+    <div id="app" v-cloak class="site">
+        
+        <header class="ui top fixed menu">
+            <a class="header item" @click="current_page = 'home'">
+                <i class="home large icon"></i>
+                Home
+            </a>
+            <div class="right menu">
+                <div :class="{
+                             'header'   : true,
+                             'disabled' : !pid_loaded,
+                             'item'     : true
+                           }" 
+                           @click="pid_loaded ? current_page = 'pid_tuner' : current_page = 'home'" v-cloak>
+                    <div :class="{
+                                   'ui'       : true,
+                                   'blue'     : true,
+                                   'disabled' : current_page == 'pid_tuner' || !pid_loaded,
+                                   'button'   : true
+                                 }">
+                        <i :class="{'chart'   : true,
+                                    'line'    : true,
+                                    'icon'    : true,
+                                    'loading' : !pid_loaded,
+                                   }"></i>
+                        PID Tuner
+                    </div>
+                </div>
+                <a class="item" href="https://github.com/pidtuner" target="_blank">
+                    <i class="github large icon"></i>
+                    Help
+                </a>
+            </div>
+        </header>
+
+        <main class="site-content ui segment">
+            <keep-alive>
+                <component 
+                    :is="getComponent(current_page)"
+                    :pid_loaded="pid_loaded"
+                    :window_width="window_width"
+                    @load_pid="current_page = 'pid_tuner'"
+                >
+                </component>
+            </keep-alive>	
+        </main>
+
+        <footer class="ui compact bottom fixed icon menu"> 
+        <a class="item social-item" 
+           v-for="social in list_social" 
+           :href="social.url" target="_blank" 
+           :data-tooltip="social.name" data-inverted="">
+          <i :class="[social.icon, 'large', 'icon']"></i>
+        </a>
+        </footer>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.17/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.3/semantic.min.js"></script>
+    <script src="https://cdn.rawgit.com/tyleryasaka/semantic-ui-range/master/range.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handsontable/5.0.2/handsontable.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.0/papaparse.min.js"></script>
+    <!--script src="https://cdn.jsdelivr.net/npm/@handsontable/vue@2.0.0/vue-handsontable-ce.min.js"></script-->
+    <script src="./vendor/vue-handsontable-ce-2.0.0/vue-handsontable-ce.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-chartjs/3.4.0/vue-chartjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
+    <!--script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-draggable@0.1.6/dist/chartjs-plugin-draggable.min.js"></script-->
+    <script src="./vendor/chartjs-plugin-draggable-0.1.6/chartjs-plugin-draggable.min.js"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
+    <script src="./pid/v1.0.0/pid_tuner.js"></script>
+    <script src="./app/utils.js"></script>
+    <script src="./app/components/HomeView.js">       </script>
+    <script src="./app/components/ErrorView.js">      </script>
+    <script src="./app/components/LineChartView.js">  </script>
+    <script src="./app/components/PidTunerView.js">   </script>
+    <script src="./app/components/ImportDataView.js"> </script>
+    <script src="./app/components/SelectStepView.js"> </script>
+    <script src="./app/components/SelectModelView.js"></script>
+    <script src="./app/components/TunePidView.js">    </script>
+    <script src="./app/app.js"></script>
+
+    <script src="./assets/test_data.js"></script>
+
+</body>
+
+</html>

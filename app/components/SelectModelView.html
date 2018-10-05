@@ -1,0 +1,70 @@
+<div class="ui stackable grid">
+
+    <div class="five wide column">
+    <div class="ui one column grid">
+
+      <div class="row step-select-selected-row">
+		<h4 class="ui center aligned header">
+			Selected Model
+		</h4>
+      </div>
+
+	<div class="row step-select-selected-row">
+		<div class="ui card model-select-card">
+		  <div class="image model-select-img-div">
+			<!--img :src="getModelImgUrl(internal_selected_model.type)" class="model-select-img"-->
+			<p v-html="getModelEquation(internal_selected_model.type)"></p>
+		  </div>
+		  <div class="content">
+			<a class="tiny header model-select-cardhead">{{ getModelName(internal_selected_model.type) }}</a>
+			<div class="description">
+				<div class="ui list">
+				  <div class="item" v-for="param in internal_selected_model_params">{{ param }}</div>
+				</div>
+			</div>
+		  </div>
+		</div>
+	</div>
+
+      <div class="ui divider"></div>
+
+      <div class="row select-step-range">
+		<div class="ui one column grid step-select-steps">
+		    <div class="row step-select-item">
+		    <h4 class="ui center aligned header">
+		      Identified Models
+		    </h4>
+		    </div>
+			<!-- repeats -->
+			<div class="row step-select-item" v-for="model in model_list">
+			  <div class="fluid ui left labeled button" tabindex="0" @click="setModel(model); $emit('latestStep');">
+				<a class="ui basic right pointing label step-select-left">{{ getModelName(model.type) }}</a>
+				<div :class="{
+					           'ui'                : true,
+					           'icon'              : true, 
+					           'button'            : true,
+					           'step-select-right' : true,
+					           'blue'              : internal_selected_model.type == model.type
+					           }">Select<i class="check icon" v-show="internal_selected_model.type == model.type"></i></div>
+			  </div>
+			</div>
+		</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="eleven wide column">
+	<line-chart :chart-data="output_chart_data" 
+	            :ranges_enabled="false"
+	            :ranges="[]"
+	            :cssClasses="'import-chart'">
+	</line-chart>
+	<line-chart :chart-data="input_chart_data"  
+	            :ranges_enabled="false"
+	            :ranges="[]"
+	            :cssClasses="'import-chart'">
+	</line-chart>
+  </div>
+
+</div>
