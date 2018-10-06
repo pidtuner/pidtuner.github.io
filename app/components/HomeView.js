@@ -102,6 +102,12 @@ var HomeView = {
   methods: {
     onClicked : function() {
       this.$emit('load_pid');
+    },
+    goToShop  : function() {
+      window.open(
+        'https://teespring.com/pidtuner',
+        '_blank' // open in a new window.
+      );
     }
   },
 };
