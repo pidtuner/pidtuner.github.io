@@ -45,14 +45,14 @@ var HomeView = {
         {
           title   : 'Armadillo',
           descrip : `High level linear algebra subroutines are provided by Armadillo C++.`,
-          logo    : 'http://arma.sourceforge.net/img/armadillo_logo2.png',
+          logo    : './licenses/armadillo_logo2.png',
           url     : 'http://arma.sourceforge.net/'
         },
         {
           title   : 'Emscripten',
           descrip : `The C++ routines are compiled to WebAssembly using Emscripten.`,
-          logo    : 'http://kripken.github.io/emscripten-site/_static/Emscripten_logo_full.png',
-          url     : 'http://kripken.github.io/emscripten-site/'
+          logo    : 'https://kripken.github.io/emscripten-site/_static/Emscripten_logo_full.png',
+          url     : 'https://kripken.github.io/emscripten-site/'
         },
         {
           title   : 'Vue',

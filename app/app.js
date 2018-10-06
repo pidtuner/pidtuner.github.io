@@ -19,11 +19,6 @@ window.mainVue = new Vue({
             icon : "twitter square"
           },
           {
-            name : "facebook",
-            url  : "https://www.facebook.com/pid.tuner",
-            icon : "facebook square"
-          },
-          {
             name : "reddit",
             url  : "https://www.reddit.com/user/pidtuner",
             icon : "reddit square"
