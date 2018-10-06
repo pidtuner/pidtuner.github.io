@@ -1,6 +1,6 @@
 # PidTuner
 
-This repo is used to host the PidTuner static website and is also used to report **issues**.
+This repo is used to host the [PidTuner static website](https://pidtuner.com/) and is also used to report **issues**.
 
 When reporting an issue, please follow the guidelines below:
 

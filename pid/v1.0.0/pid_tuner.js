@@ -49,10 +49,10 @@ START arma-post.js
 var Arma = Armadillo();
 Arma.await = function() {
     return new Promise((resolve, reject) => {
-        Arma['onRuntimeInitialized'] = function() {        
+        Armadillo().then(function(Module) {
             Arma.setup();
             resolve();
-        };
+        });
     });
 };
 
