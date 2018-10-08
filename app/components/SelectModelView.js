@@ -346,7 +346,7 @@ var SelectModelView = {
 		return out_labels;
 	},
 	getLabel(value) {
-		if(!value) {
+		if(typeof value != "number") {
 			return '';
 		}
 		return value.toFixed(2);

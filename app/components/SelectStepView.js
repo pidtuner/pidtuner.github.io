@@ -222,7 +222,7 @@ var SelectStepView = {
 		return out_labels;
 	},
 	getLabel(value) {
-		if(!value) {
+		if(typeof value != "number") {
 			return '';
 		}
 		return value.toFixed(2);
@@ -243,10 +243,10 @@ var SelectStepView = {
 		var row_start = Math.floor(range[0] / this.step_data);
 		var row_end   = Math.floor(range[1] / this.step_data);
 		// roundup
-    	if(Math.abs(range[0] - this.time.length) < this.step_data) {
+    	if(Math.abs(range[0] - this.uniform_time.length) < this.step_data) {
 			row_start = this.length_data-1;
     	}
-	  	if(Math.abs(range[1] - this.time.length) < this.step_data) {
+	  	if(Math.abs(range[1] - this.uniform_time.length) < this.step_data) {
 			row_end = this.length_data-1;
     	}
     	// TODO : round down?
@@ -269,11 +269,11 @@ var SelectStepView = {
 				row_start = row_start * this.step_data + this.left_row_start;
 				row_end   = row_end   * this.step_data + this.left_row_end;
 				// limit 
-				if(row_start >= this.time.length) {
-					row_start = this.time.length - 1;
+				if(row_start >= this.uniform_time.length) {
+					row_start = this.uniform_time.length - 1;
 				}
-				if(row_end >= this.time.length) {
-					row_end = this.time.length - 1;
+				if(row_end >= this.uniform_time.length) {
+					row_end = this.uniform_time.length - 1;
 				}
 				// set selected range for list and display
 				if(this.selected_range[0] != row_start || this.selected_range[1] != row_end) {
