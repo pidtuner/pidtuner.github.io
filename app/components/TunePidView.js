@@ -369,10 +369,24 @@ var TunePidView = {
 		var sim_length   = Arma.CxMat.zeros(1, 1);
 		sim_length.set_at(0, 0, new Arma.cx_double(sim_length_r, 0.0));
 
+		// Create Reference
+		var r_size = new Arma.cx_double(1.0, 0.0);
+		var r_sim  = Arma.CxMat.zeros(sim_length_r, 1);
+		var r_sim_fill = Arma.CxMat.zeros(sim_length_r - Math.ceil(0.01*sim_length_r) + 1, 1); 
+		r_sim_fill.fill(r_size);
+		r_sim.set_rows(r_sim_fill, Math.ceil(0.01*sim_length_r) - 1, sim_length_r - 1);
+		// Create Input Disturbance
+		var dstep = new Arma.cx_mat();
+		pid.dist_step(model.get_type(), model.get_params(), dstep);
+		var d_sim  = Arma.CxMat.zeros(sim_length_r, 1);
+		var d_sim_fill = Arma.CxMat.zeros(sim_length_r - Math.ceil(0.51*sim_length_r) + 1, 1); 
+		d_sim_fill.fill(dstep.at(0, 0));
+		d_sim.set_rows(d_sim_fill, Math.ceil(0.51*sim_length_r) - 1, sim_length_r - 1);
+
 		// make simulation
 		var u_sim = new Arma.cx_mat();
 		var y_sim = new Arma.cx_mat();
-		pid.sim_pid(model.get_type(), model.get_params(), this.arma_gains, limits, sim_ts, sim_length, u_sim, y_sim);
+		pid.sim_pid(model.get_type(), model.get_params(), this.arma_gains, limits, sim_ts, sim_length, r_sim, d_sim, u_sim, y_sim);
 
 		this.pidsim_time  .splice(0, this.pidsim_time  .length);
 		this.pidsim_input .splice(0, this.pidsim_input .length);
