@@ -357,7 +357,7 @@ var TunePidView = {
 		theta = theta.real().to_array()[0][0];
 		var ts_r         = ts.real().to_array()[0][0];
 		var stime        = 160.0*Math.max(theta, ts_r);
-		var sim_length_r = this.time_scale * Math.ceil(stime/ts_r);
+		var sim_length_r = Math.ceil(this.time_scale * Math.ceil(stime/ts_r));
 
 		
 		// NOTE : limit simulation resolution to N samples to avoid ui feeze
@@ -396,6 +396,10 @@ var TunePidView = {
 		var dstep = new Arma.cx_mat();
 		pid.dist_step(model.get_type(), model.get_params(), dstep);
 		this.d_size = dstep.at(0, 0).real();
+		if(this.d_size == Infinity || this.d_size == -Infinity) {
+			this.d_size = 0.0;
+		}
+		// TODO : [BUG] dstep = d_size = -Infinity when theta == 0 ?
 		this.pidsim_dist.splice(0, this.pidsim_dist.length);
 		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {

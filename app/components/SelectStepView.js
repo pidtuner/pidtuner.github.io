@@ -183,12 +183,17 @@ var SelectStepView = {
 			this.uniform_output.copyFrom(uniform_y);
 			// find steps
 			var steps = new Arma.cx_mat();
-			/* TODO
-			BUGS when at least the first 5 samples of u are not the same, the find_steps algorithm fails
-			*/
 			pid.find_steps(t, u, y, steps);		
 			// update cache
 			steps_arr = steps.to_array();
+			// fix to always have same start and limit to max 8 steps
+			if(steps_arr.length > 8) {
+				steps_arr.splice(8, steps_arr.length  );
+			}
+			for(var i = 1; i < steps_arr.length; i++) {
+				steps_arr[i][0] = steps_arr[0][0];
+			}
+			// save in cache
 			this.cached_range_list.copyFrom(steps_arr);
 		}
 		else {
