@@ -59,6 +59,8 @@ var PidTunerView = {
       pidsim_time         : [],      
       pidsim_input        : [],
       pidsim_output       : [],
+      pidsim_ref          : [],      
+      pidsim_dist         : [],      
     }
   },
   beforeMount: function() {
@@ -202,6 +204,8 @@ var PidTunerView = {
       this.pidsim_time  .splice(0, this.pidsim_time  .length);      
       this.pidsim_input .splice(0, this.pidsim_input .length);
       this.pidsim_output.splice(0, this.pidsim_output.length);
+      this.pidsim_ref   .splice(0, this.pidsim_ref   .length);      
+      this.pidsim_dist  .splice(0, this.pidsim_dist  .length);      
     }
   },
   watch: {

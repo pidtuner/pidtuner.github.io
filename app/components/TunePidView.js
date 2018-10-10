@@ -53,11 +53,21 @@ var TunePidView = {
       type    : Array,
       required: true
     },
+    pidsim_ref: {
+      type    : Array,
+      required: true
+    },
+    pidsim_dist: {
+      type    : Array,
+      required: true
+    },
   },
   data() {
     return {
-      //step_size        : 1,
-      //dist_size        : 1,
+      r_time        : 0.01,
+      r_size        : 1,
+      d_time        : 0.51,
+      d_size        : 1,
       // helpers
       slider_res           : 50, // slider native resolution to from -slider_res to +slider_res
       slider_gains_enabled : true,
@@ -117,15 +127,8 @@ var TunePidView = {
   computed: {
     input_chart_data: function() {
 	  // first create data
-	  var in_data = [];
-	  /*
-	  for(var i = 0; i < this.pidsim_time.length; i++) {
-	  	in_data.push({
-	  		x : this.pidsim_time [i],
-	  		y : this.pidsim_input[i]
-	  	});
-	  }
-	  */
+	  var in_data      = [];
+	  var in_data_dist = [];
 	  // [ALT]
 	  var i = 0;	  
 	  while(true) {
@@ -137,6 +140,10 @@ var TunePidView = {
 	  		x : this.pidsim_time [idx],
 	  		y : this.pidsim_input[idx]
 	  	});
+	  	in_data_dist.push({
+	  		x : this.pidsim_time [idx],
+	  		y : this.pidsim_input[idx] + this.pidsim_dist[idx]
+	  	});
 	  	if(idx == this.pidsim_time.length-1) {
 	  		break;
 	  	}
@@ -144,12 +151,16 @@ var TunePidView = {
 	  }
 	  // then datasets
 	  var in_datasets = [
-		{
+	  	{
 		  label          : 'Input',
 		  data           : in_data,
 		  borderColor    : '#2185D0',
-		  //lineTension    : 0,
-		}
+		},
+	  	{
+		  label          : 'Disturbance',
+		  data           : in_data_dist,
+		  borderColor    : 'rgba(234, 109, 52, 1)',
+		}	
 	  ];
 	  // finally chart data
 	  var in_chart_data = {
@@ -160,15 +171,8 @@ var TunePidView = {
     }, // input_chart_data
     output_chart_data: function() {
 	  // first create data
-	  var out_data = [];
-	  /*
-	  for(var i = 0; i < this.pidsim_time.length; i++) {
-	  	out_data.push({
-	  		x : this.pidsim_time  [i],
-	  		y : this.pidsim_output[i]
-	  	});
-	  }
-	  */
+	  var out_data     = [];
+	  var out_data_ref = [];
 	  // [ALT]
 	  var i = 0;	  
 	  while(true) {
@@ -180,6 +184,10 @@ var TunePidView = {
 	  		x : this.pidsim_time  [idx],
 	  		y : this.pidsim_output[idx]
 	  	});
+	  	out_data_ref.push({
+	  		x : this.pidsim_time  [idx],
+	  		y : this.pidsim_ref   [idx]
+	  	});
 	  	if(idx == this.pidsim_time.length-1) {
 	  		break;
 	  	}
@@ -187,11 +195,15 @@ var TunePidView = {
 	  }
 	  // then datasets
 	  var out_datasets = [
-		{
+	  	{
 		  label          : 'Output',
 		  data           : out_data,
 		  borderColor    : '#2185D0',
-		  //lineTension    : 0,
+		},
+	  	{
+		  label          : 'Reference',
+		  data           : out_data_ref,
+		  borderColor    : 'rgba(234, 109, 52, 1)',
 		}
 	  ];
 	  // finally chart data
@@ -217,7 +229,7 @@ var TunePidView = {
     length_data : function() {
     	// [ALT]
     	return this.output_chart_data.datasets[0].data.length;
-    }
+    },
   }, // computed
   methods: {
     getLabels(data) {
@@ -370,18 +382,30 @@ var TunePidView = {
 		sim_length.set_at(0, 0, new Arma.cx_double(sim_length_r, 0.0));
 
 		// Create Reference
-		var r_size = new Arma.cx_double(1.0, 0.0);
-		var r_sim  = Arma.CxMat.zeros(sim_length_r, 1);
-		var r_sim_fill = Arma.CxMat.zeros(sim_length_r - Math.ceil(0.01*sim_length_r) + 1, 1); 
-		r_sim_fill.fill(r_size);
-		r_sim.set_rows(r_sim_fill, Math.ceil(0.01*sim_length_r) - 1, sim_length_r - 1);
+		this.pidsim_ref.splice(0, this.pidsim_ref.length);
+		var r_sim = Arma.CxMat.zeros(sim_length_r, 1);
+		for(var i = 0; i < sim_length_r; i++) {
+			// ref value
+			var r_value = i > Math.ceil(this.r_time*sim_length_r) ? this.r_size : 0.0;
+			// for chart
+			this.pidsim_ref.push(r_value);
+			// for simulation
+			 r_sim.set_at(i, 0, new Arma.cx_double(r_value, 0)); 
+		}
 		// Create Input Disturbance
 		var dstep = new Arma.cx_mat();
 		pid.dist_step(model.get_type(), model.get_params(), dstep);
-		var d_sim  = Arma.CxMat.zeros(sim_length_r, 1);
-		var d_sim_fill = Arma.CxMat.zeros(sim_length_r - Math.ceil(0.51*sim_length_r) + 1, 1); 
-		d_sim_fill.fill(dstep.at(0, 0));
-		d_sim.set_rows(d_sim_fill, Math.ceil(0.51*sim_length_r) - 1, sim_length_r - 1);
+		this.d_size = dstep.at(0, 0).real();
+		this.pidsim_dist.splice(0, this.pidsim_dist.length);
+		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
+		for(var i = 0; i < sim_length_r; i++) {
+			// ref value
+			var d_value = i > Math.ceil(this.d_time*sim_length_r) ? this.d_size : 0.0;
+			// for chart
+			this.pidsim_dist.push(d_value);
+			// for simulation
+			 d_sim.set_at(i, 0, new Arma.cx_double(d_value, 0)); 
+		}
 
 		// make simulation
 		var u_sim = new Arma.cx_mat();
