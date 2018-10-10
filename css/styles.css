@@ -53,14 +53,14 @@ footer {
 
 .social-item {
   padding       : 10px !important;
-  padding-top   : 0px !important;
-  padding-bottom: 0px !important;
+  padding-top   : 0px  !important;
+  padding-bottom: 0px  !important;
 }
 
 #seo-title {
-  font-size: 1rem;
-  padding: 0;
-  display: initial;
+  font-size: 1rem    !important;;
+  padding  : 0       !important;;
+  display  : initial !important;;
 }
 
 /* ***********************************************************************
