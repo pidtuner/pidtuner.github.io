@@ -1,0 +1,9 @@
+User-Agent: *
+Disallow: 
+Allow: /app
+Allow: /assets
+Disallow: /css
+Allow: /licenses
+Disallow: /pid
+Disallow: /vendor
+Sitemap: https://pidtuner.com/sitemap.xml
