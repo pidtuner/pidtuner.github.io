@@ -57,6 +57,12 @@ footer {
   padding-bottom: 0px !important;
 }
 
+#seo-title {
+  font-size: 1rem;
+  padding: 0;
+  display: initial;
+}
+
 /* ***********************************************************************
 HOME COMPONENT */
 
