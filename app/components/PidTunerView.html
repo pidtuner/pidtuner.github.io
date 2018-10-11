@@ -78,14 +78,18 @@
 							   :selected_model   ="selected_model"
                                :cached_gains_slider="cached_gains_slider"
                                :cached_time_slider ="cached_time_slider"
+                               :cached_r_size      ="cached_r_size"
+                               :cached_d_size      ="cached_d_size"
 							   :pid_gains        ="pid_gains"
                                :pidsim_time      ="pidsim_time"
                                :pidsim_input     ="pidsim_input"
                                :pidsim_output    ="pidsim_output"
                                :pidsim_ref       ="pidsim_ref"
                                :pidsim_dist      ="pidsim_dist"
-                               @updateGainsSlider="(value)=>{cached_gains_slider = value}"
-                               @updateTimeSlider ="(value)=>{cached_time_slider  = value}"
+                               @updateGainsSlider   ="(value)=>{cached_gains_slider = value}"
+                               @updateTimeSlider    ="(value)=>{cached_time_slider  = value}"
+                               @update_cached_r_size="(value)=>{cached_r_size       = value}"
+                               @update_cached_d_size="(value)=>{cached_d_size       = value}"
 							   >
 					</component>				
 				</div>

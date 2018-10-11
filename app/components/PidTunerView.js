@@ -55,6 +55,8 @@ var PidTunerView = {
       // step 4 result : tune pid
 	  cached_gains_slider : 0,
       cached_time_slider  : 0,
+      cached_r_size       : 1.0,
+      cached_d_size       : 0.0,
       pid_gains           : [],
       pidsim_time         : [],      
       pidsim_input        : [],
@@ -199,7 +201,9 @@ var PidTunerView = {
     },
     resetStep4() {
       this.cached_gains_slider = 0;
-      this.cached_time_slider  = 0;    	
+      this.cached_time_slider  = 0;  
+      this.cached_r_size       = 1.0;
+      this.cached_d_size       = 0.0;
       this.pid_gains.splice(0, this.pid_gains.length);
       this.pidsim_time  .splice(0, this.pidsim_time  .length);      
       this.pidsim_input .splice(0, this.pidsim_input .length);

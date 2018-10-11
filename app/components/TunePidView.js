@@ -36,6 +36,14 @@ var TunePidView = {
       type    : Number,
       required: true
     },
+    cached_r_size: {
+      type    : Number,
+      required: true
+    },
+    cached_d_size: {
+      type    : Number,
+      required: true
+    },
     // algorithm output 
     pid_gains: {
       type    : Array,
@@ -65,9 +73,7 @@ var TunePidView = {
   data() {
     return {
       r_time        : 0.01,
-      r_size        : 1,
       d_time        : 0.51,
-      d_size        : 1,
       // helpers
       slider_res           : 50, // slider native resolution to from -slider_res to +slider_res
       slider_gains_enabled : true,
@@ -142,7 +148,7 @@ var TunePidView = {
 	  	});
 	  	in_data_dist.push({
 	  		x : this.pidsim_time [idx],
-	  		y : this.pidsim_input[idx] + this.pidsim_dist[idx]
+	  		y : /*this.pidsim_input[idx] +*/ this.pidsim_dist[idx]
 	  	});
 	  	if(idx == this.pidsim_time.length-1) {
 	  		break;
@@ -386,25 +392,27 @@ var TunePidView = {
 		var r_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {
 			// ref value
-			var r_value = i > Math.ceil(this.r_time*sim_length_r) ? this.r_size : 0.0;
+			var r_value = i > Math.ceil(this.r_time*sim_length_r) ? this.cached_r_size : 0.0;
 			// for chart
 			this.pidsim_ref.push(r_value);
 			// for simulation
 			 r_sim.set_at(i, 0, new Arma.cx_double(r_value, 0)); 
 		}
 		// Create Input Disturbance
+		/*
+		// TODO : [BUG] dstep = cached_d_size = -Infinity when theta == 0 ?
 		var dstep = new Arma.cx_mat();
 		pid.dist_step(model.get_type(), model.get_params(), dstep);
-		this.d_size = dstep.at(0, 0).real();
-		if(this.d_size == Infinity || this.d_size == -Infinity) {
-			this.d_size = 0.0;
+		this.cached_d_size = dstep.at(0, 0).real();
+		if(this.cached_d_size == Infinity || this.cached_d_size == -Infinity) {
+			this.cached_d_size = 0.0;
 		}
-		// TODO : [BUG] dstep = d_size = -Infinity when theta == 0 ?
+		*/
 		this.pidsim_dist.splice(0, this.pidsim_dist.length);
 		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {
 			// ref value
-			var d_value = i > Math.ceil(this.d_time*sim_length_r) ? this.d_size : 0.0;
+			var d_value = i > Math.ceil(this.d_time*sim_length_r) ? this.cached_d_size : 0.0;
 			// for chart
 			this.pidsim_dist.push(d_value);
 			// for simulation
@@ -489,7 +497,13 @@ var TunePidView = {
 		// update simulation
 		this.loadArmaGains();
 		this.makeSimulation();		
-	}
+	},
+	updateRefSize() {
+		this.$emit('update_cached_r_size', parseFloat( event.target.value ));
+	},
+	updateDistSize() {
+		this.$emit('update_cached_d_size', parseFloat( event.target.value ));
+	},
   }, // methods
   watch: {
 	gains_scale: function(){
@@ -512,6 +526,12 @@ var TunePidView = {
 		}
 		// call throttle func
 		this.throttle_time_scale();
+	},
+	cached_r_size: function(){
+		this.makeSimulation();
+	},
+	cached_d_size: function(){
+		this.makeSimulation();
 	},
   }
 };

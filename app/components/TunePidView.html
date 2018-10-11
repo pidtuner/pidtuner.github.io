@@ -57,32 +57,49 @@
 			</h4>
 		</div>
 
-<!--
-		<div class="row ui fluid labeled input tune-pid-gain">
-		  <div class="ui label tune-pid-label-2">
-		  	Reference = 
-		  </div>
-		  <input type="number" v-model="step_size">
-		</div>
 
-		<div class="row ui fluid labeled input tune-pid-gain">
-		  <div class="ui label tune-pid-label-2">
-		  	Disturbance = 
-		  </div>
-		  <input type="number" v-model="dist_size">
-		</div>
--->
 		<div class="row ui segment tune-pid-slider">
-		<div class="ui fuild grid container middle aligned" id="tune-pid-sliderdiv-2">
-			<div class="four wide column tune-pid-slidertext">
-				Scale Time
+			<div class="ui fuild grid container middle aligned" id="tune-pid-sliderdiv-2">
+				<div class="four wide column tune-pid-slidertext">
+					Duration
+				</div>
+				<div class="twelve wide column">
+					<div class="ui range" ref="slider_time"></div>	
+				</div>
 			</div>
-			<div class="twelve wide column">
-				<div class="ui range" ref="slider_time"></div>	
-			</div>
-		</div>
 		</div>
 
+		<div class="row ui fluid labeled input tune-pid-gain">
+		  <div class="ui label tune-pid-label step-selected-showifbig">
+			Reference
+		  </div>
+		  <div class="ui label tune-pid-label step-selected-showifsmall">
+			Ref
+		  </div>
+		  <input type        ="number" 
+		         :value      ="cached_r_size" 
+		         @keyup.enter="updateRefSize()">
+		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
+			[-]
+		  </div>
+		  <i class="pencil large icon tune-pid-editicon"></i>
+		</div>
+
+		<div class="row ui fluid labeled input tune-pid-gain">
+		  <div class="ui label tune-pid-label step-selected-showifbig">
+			Disturbance
+		  </div>
+		  <div class="ui label tune-pid-label step-selected-showifsmall">
+			Dist
+		  </div>
+		  <input type        ="number" 
+		         :value      ="cached_d_size" 
+		         @keyup.enter="updateDistSize()">
+		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
+			[-]
+		  </div>
+		  <i class="pencil large icon tune-pid-editicon"></i>
+		</div>
 
     </div>
   </div>
