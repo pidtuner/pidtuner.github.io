@@ -88,7 +88,7 @@ var PidTunerView = {
       icon  : 'share square icon',
       info  : `
       The step response data might contain multiple steps,
-      but for tuning puposes, only one step is needed.
+      but for tuning purposes, only one step is needed.
       Please select the smallest time range, where only one step response data is contained.
       It is possible to define custom ranges by dragging the vertical lines.
       `

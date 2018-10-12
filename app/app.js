@@ -40,7 +40,7 @@ window.mainVue = new Vue({
           },
           {
             name : "mail",
-            url  : "mailto:pidtuner.webapp@gmail.com",
+            url  : "mailto:pidtuner@pidtuner.com",
             icon : "envelope"
           },
       ],
