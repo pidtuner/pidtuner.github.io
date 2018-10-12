@@ -499,10 +499,10 @@ var TunePidView = {
 		this.makeSimulation();		
 	},
 	updateRefSize() {
-		this.$emit('update_cached_r_size', parseFloat( event.target.value ));
+		this.$emit('update_cached_r_size', parseFloat( this.$refs.r_size.value ));
 	},
 	updateDistSize() {
-		this.$emit('update_cached_d_size', parseFloat( event.target.value ));
+		this.$emit('update_cached_d_size', parseFloat( this.$refs.d_size.value ));
 	},
   }, // methods
   watch: {

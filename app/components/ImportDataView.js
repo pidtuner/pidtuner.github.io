@@ -458,8 +458,21 @@ var ImportDataView = {
   watch: {
 	ranges: function(){
 		if (!this.rangedChangedThrottle) {
-			var rangedChanged = () => {
-				// [ALT]
+			var rangedChanged = () => {	
+				// get downsampled values
+				var new_row_start = this.ranges.length > 0 ? this.ranges[0][1] : -1;
+				var new_row_end   = this.ranges.length > 0 ? this.ranges[0][2] : -1;
+				// transform to upsampled
+				new_row_start = new_row_start * this.step_data + (this.left_row_start ? this.left_row_start : 0);
+				new_row_end   = new_row_end   * this.step_data + (this.left_row_end   ? this.left_row_end   : 0);
+				// limit 
+				if(new_row_start >= this.time.length) {
+					new_row_start = this.time.length - 1;
+				}
+				if(new_row_end >= this.time.length) {
+					new_row_end = this.time.length - 1;
+				}
+				// get old values
 				var old_row_start = this.table.getSelected() ? this.table.getSelected()[0][0] : -1;
 				var old_row_end   = this.table.getSelected() ? this.table.getSelected()[0][2] : -1;
 				// switch if neccesary
@@ -468,23 +481,13 @@ var ImportDataView = {
 					old_row_start   = old_row_end  ;
 					old_row_end     = old_row_tmp  ;
 				}
-				var new_row_start = this.ranges.length > 0 ? this.ranges[0][1] : -1;
-				var new_row_end   = this.ranges.length > 0 ? this.ranges[0][2] : -1;
-				// transform to upsampled
-				new_row_start = new_row_start * this.step_data + this.left_row_start;
-				new_row_end   = new_row_end   * this.step_data + this.left_row_end;
-				// limit 
-				if(new_row_start >= this.time.length) {
-					new_row_start = this.time.length - 1;
-				}
-				if(new_row_end >= this.time.length) {
-					new_row_end = this.time.length - 1;
-				}
 				// avoid infinite loop
-				if(new_row_start != old_row_start /*&& Math.abs(new_row_start - old_row_start) > this.step_data*/) {
+				if(new_row_start != old_row_start) {
+					old_row_end   = old_row_end   >= 0 ? old_row_end   : new_row_end  ; // fix
 					this.table.selectCell(new_row_start, 0, old_row_end, 2, true, true);
 				}
-				if(new_row_end != old_row_end /*&& Math.abs(new_row_end - old_row_end) > this.step_data*/) {
+				if(new_row_end != old_row_end) {
+					old_row_start = old_row_start >= 0 ? old_row_start : new_row_start; // fix
 					this.table.selectCell(old_row_start, 0, new_row_end, 2, true, true);
 				}	
 			};

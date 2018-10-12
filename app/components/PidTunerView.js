@@ -154,8 +154,6 @@ var PidTunerView = {
 						this.arma_models.push(model_arma);
 					}
 				}
-				// TODO : bug in import_data, selection not working until click in table first
-				// TODO : in tune_pid only firefox, spinboxes show buttons
 				// TODO : button to reload test data
 				// TODO : implement undo ?
 			}

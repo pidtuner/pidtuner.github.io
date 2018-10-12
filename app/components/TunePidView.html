@@ -76,7 +76,7 @@
 		  <div class="ui label tune-pid-label step-selected-showifsmall">
 			Ref
 		  </div>
-		  <input type        ="number" 
+		  <input type        ="number" ref="r_size"
 		         :value      ="cached_r_size" 
 		         @keyup.enter="updateRefSize()">
 		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
@@ -92,7 +92,7 @@
 		  <div class="ui label tune-pid-label step-selected-showifsmall">
 			Dist
 		  </div>
-		  <input type        ="number" 
+		  <input type        ="number" ref="d_size"
 		         :value      ="cached_d_size" 
 		         @keyup.enter="updateDistSize()">
 		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
