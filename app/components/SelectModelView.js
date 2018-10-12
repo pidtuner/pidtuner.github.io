@@ -49,7 +49,15 @@ var SelectModelView = {
   data() {
     return {
 		max_chart_len    : 300,
+		model_list       : [],
+		selected_type    : '',
+		selected_params  : [],
+		selected_V       : 0,
+		selected_y       : []
     }
+  },
+  created: function() {
+                  
   },
   mounted: function() {
   	// if cache exists, enable next step
@@ -57,6 +65,13 @@ var SelectModelView = {
 		// emit step loaded
 		this.$emit('enableNext');
   	}
+  	//
+  	this.selected_type   = this.selected_model.type  ;
+	this.selected_params = this.selected_model.params;
+	this.selected_V      = this.selected_model.V     ;
+	this.selected_y      = this.selected_model.y     ;
+    // load or create model_list
+  	this.model_list.copyFrom(this.getModelList());  	
   },
   computed: {
     input_chart_data: function() {
@@ -110,7 +125,7 @@ var SelectModelView = {
 	  	});
 	  	out_data_selected.push({
 	  		x : this.uniform_time [idx],
-	  		y : this.internal_selected_model.y[idx]
+	  		y : this.selected_y[idx]
 	  	});
 	  	if(idx == this.uniform_time.length-1) {
 	  		break;
@@ -138,7 +153,163 @@ var SelectModelView = {
       };
       return out_chart_data;
     }, // output_chart_data
-    model_list: function() {
+    internal_selected_model_params: function() {
+      var strListParams = []; 
+      if(this.selected_type == '1stord') {
+      	var k     = this.selected_params[0];
+        var tao   = this.selected_params[1];
+        var theta = this.selected_params[2];
+        //var y0    = this.selected_params[3];
+        strListParams.push(`k = ${k}`  );
+        strListParams.push(`τ = ${tao}`);
+        strListParams.push(`θ = ${theta}`);
+      }
+      else if(this.selected_type == '2ndord') {
+      	var a1    = this.selected_params[0];
+        var a2    = this.selected_params[1];
+        var b     = this.selected_params[2];
+        var theta = this.selected_params[3];
+        //var y0    = this.selected_params[4];
+        // frequency and damping
+        var w     = Math.sqrt(-a1);
+        var gi    = -a2/(2*w);
+        var k     = -b/a1;
+        strListParams.push(`k = ${k}` );
+        strListParams.push(`ω = ${w}` );
+        strListParams.push(`ξ = ${gi}`);
+        strListParams.push(`θ = ${theta}`);
+      }
+      else if(this.selected_type == 'integ') {
+      	var k     = this.selected_params[0];
+        var theta = this.selected_params[1];
+        //var y0    = this.selected_params[2];
+        strListParams.push(`k = ${k}` );
+        strListParams.push(`θ = ${theta}`);
+      }
+      else if(this.selected_type == 'integlag') {
+      	var k     = this.selected_params[0];
+        var tao   = this.selected_params[1];
+        var theta = this.selected_params[2];
+        //var y0    = this.selected_params[3];
+        strListParams.push(`k = ${k}`  );
+        strListParams.push(`τ = ${tao}`);
+        strListParams.push(`θ = ${theta}`);
+      }
+      else if(this.selected_type == 'integdouble') {
+        var k     = this.selected_params[0];
+        var theta = this.selected_params[1];
+        //var y0    = this.selected_params[2];
+        strListParams.push(`k = ${k}` );
+        strListParams.push(`θ = ${theta}`);
+      }
+      else {
+          strListParams.push('Unknown Model');
+      }
+      // return array
+      return strListParams;
+    },
+    step_data : function() {
+    	// [ALT]
+    	return Math.ceil(this.uniform_time.length/this.max_chart_len);
+    },
+    length_data : function() {
+    	// [ALT]
+    	return this.output_chart_data.datasets[0].data.length;
+    }
+  }, // computed
+  methods: {
+    getLabels(data) {
+		var out_labels = [];
+		for(var i = 0; i < data.length; i++) {
+			out_labels.push(this.getLabel(data[i].x));
+		}
+		return out_labels;
+	},
+	getLabel(value) {
+		if(typeof value != "number") {
+			return '';
+		}
+		return value.toFixed(2);
+	},
+	setModel(model) {
+		this.$emit('updateSelectedModel', model);
+		this.selected_type   = model.type  ;
+		this.selected_params = model.params;
+		this.selected_V      = model.V     ;
+		this.selected_y      = model.y     ;
+		// as soon as any range is selected, we can continue
+		this.$emit('enableNext');
+	},
+	getModelName(type) {
+      if(type == '1stord') {
+        return '1st Order';
+      }
+      else if(type == '2ndord') {
+        return '2nd Order';
+      }
+      else if(type == 'integ') {
+        return 'Integrator';
+      }
+      else if(type == 'integlag') {
+        return 'Integrator with Lag';
+      }
+      else if(type == 'integdouble') {
+        return 'Double Integrator';
+      }
+      else {
+          return 'Unknown Model'
+      }
+	},
+	getModelImgUrl(type) {
+	  if(type == '1stord') {
+        return './assets/models/1stord.svg';
+      }
+      else if(type == '2ndord') {
+        return './assets/models/2ndord.svg';
+      }
+      else if(type == 'integ') {
+        return './assets/models/integ.svg';
+      }
+      else if(type == 'integlag') {
+        return './assets/models/integlag.svg';
+      }
+      else if(type == 'integdouble') {
+        return './assets/models/integdouble.svg';
+      }
+      else {
+          return 'Unknown Model'
+      }
+	},
+	getModelEquation(type) {
+	  var eq;
+	  if(type == '1stord') {
+        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{\\tau s+1}$$';
+      }
+      else if(type == '2ndord') {
+        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k {\\omega}^2 e^{-\\theta s}}{s^2 + 2 \\xi \\omega s + {\\omega}^2}$$';
+      }
+      else if(type == 'integ') {
+        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s}$$';
+      }
+      else if(type == 'integlag') {
+        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s(\\tau s + 1)}$$';
+      }
+      else if(type == 'integdouble') {
+        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s^2}$$';
+      }
+      else {
+        eq = 'Unknown Model'
+      }
+      // NOTE : need to bind using v-html and the lines below
+      this.$nextTick(function() {
+	    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+	  });
+      return eq;
+	},
+	getModelParams(type) {
+
+	},
+	getModelList: function() {
       // update or cache
 	  var model_list = [];
 	  if(this.cached_model_list.length <= 0) {
@@ -247,191 +418,15 @@ var SelectModelView = {
 		model_list.copyFrom(this.cached_model_list);
 	  }
 	  // check if need to set model
-	  if(!this.internal_selected_model.y) {
-		  // set first model
-		  this.setModel(model_list[0]);
+	  if(!this.selected_y || this.selected_y.length == 0) {
+		// set first model
+		this.setModel(model_list[0]);
 	  }
       // emit step loaded
       this.$emit('stepLoaded');
       // return
       return model_list;
     }, // model_list
-    internal_selected_model: {
-        get: function() { 
-            return {
-              type  : this.selected_model.type  ,
-              params: this.selected_model.params,
-              V     : this.selected_model.V,
-              y     : this.selected_model.y,
-            }; 
-        },
-        set: function(model) {
-          // do it the vue way
-          Vue.set(this.selected_model, 'type'  , model.type  );
-          Vue.set(this.selected_model, 'params', model.params);
-          Vue.set(this.selected_model, 'V'     , model.V     );
-          Vue.set(this.selected_model, 'y'     , model.y     );
-        }    
-    },
-    internal_selected_model_params: function() {
-      var strListParams = []; 
-      if(this.selected_model.type == '1stord') {
-      	var k     = this.selected_model.params[0];
-        var tao   = this.selected_model.params[1];
-        var theta = this.selected_model.params[2];
-        //var y0    = this.selected_model.params[3];
-        strListParams.push(`k = ${k}`  );
-        strListParams.push(`τ = ${tao}`);
-        strListParams.push(`θ = ${theta}`);
-      }
-      else if(this.selected_model.type == '2ndord') {
-      	var a1    = this.selected_model.params[0];
-        var a2    = this.selected_model.params[1];
-        var b     = this.selected_model.params[2];
-        var theta = this.selected_model.params[3];
-        //var y0    = this.selected_model.params[4];
-        // frequency and damping
-        var w     = Math.sqrt(-a1);
-        var gi    = -a2/(2*w);
-        var k     = -b/a1;
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`ω = ${w}` );
-        strListParams.push(`ξ = ${gi}`);
-        strListParams.push(`θ = ${theta}`);
-      }
-      else if(this.selected_model.type == 'integ') {
-      	var k     = this.selected_model.params[0];
-        var theta = this.selected_model.params[1];
-        //var y0    = this.selected_model.params[2];
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`θ = ${theta}`);
-      }
-      else if(this.selected_model.type == 'integlag') {
-      	var k     = this.selected_model.params[0];
-        var tao   = this.selected_model.params[1];
-        var theta = this.selected_model.params[2];
-        //var y0    = this.selected_model.params[3];
-        strListParams.push(`k = ${k}`  );
-        strListParams.push(`τ = ${tao}`);
-        strListParams.push(`θ = ${theta}`);
-      }
-      else if(this.selected_model.type == 'integdouble') {
-        var k     = this.selected_model.params[0];
-        var theta = this.selected_model.params[1];
-        //var y0    = this.selected_model.params[2];
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`θ = ${theta}`);
-      }
-      else {
-          strListParams.push('Unknown Model');
-      }
-      // return array
-      return strListParams;
-    },
-    step_data : function() {
-    	// [ALT]
-    	return Math.ceil(this.uniform_time.length/this.max_chart_len);
-    },
-    length_data : function() {
-    	// [ALT]
-    	return this.output_chart_data.datasets[0].data.length;
-    }
-  }, // computed
-  methods: {
-    getLabels(data) {
-		var out_labels = [];
-		for(var i = 0; i < data.length; i++) {
-			out_labels.push(this.getLabel(data[i].x));
-		}
-		return out_labels;
-	},
-	getLabel(value) {
-		if(typeof value != "number") {
-			return '';
-		}
-		return value.toFixed(2);
-	},
-	setModel(model) {
-        // set using computed to avoid vue error
-        // NOTE : also sets as selected model for chart
-		this.internal_selected_model = {
-          type  : model.type  ,
-          params: model.params,
-          V     : model.V,
-          y     : model.y
-        }
-		// as soon as any range is selected, we can continue
-		this.$emit('enableNext');
-	},
-	getModelName(type) {
-      if(type == '1stord') {
-        return '1st Order';
-      }
-      else if(type == '2ndord') {
-        return '2nd Order';
-      }
-      else if(type == 'integ') {
-        return 'Integrator';
-      }
-      else if(type == 'integlag') {
-        return 'Integrator with Lag';
-      }
-      else if(type == 'integdouble') {
-        return 'Double Integrator';
-      }
-      else {
-          return 'Unknown Model'
-      }
-	},
-	getModelImgUrl(type) {
-	  if(type == '1stord') {
-        return './assets/models/1stord.svg';
-      }
-      else if(type == '2ndord') {
-        return './assets/models/2ndord.svg';
-      }
-      else if(type == 'integ') {
-        return './assets/models/integ.svg';
-      }
-      else if(type == 'integlag') {
-        return './assets/models/integlag.svg';
-      }
-      else if(type == 'integdouble') {
-        return './assets/models/integdouble.svg';
-      }
-      else {
-          return 'Unknown Model'
-      }
-	},
-	getModelEquation(type) {
-	  var eq;
-	  if(type == '1stord') {
-        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{\\tau s+1}$$';
-      }
-      else if(type == '2ndord') {
-        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k {\\omega}^2 e^{-\\theta s}}{s^2 + 2 \\xi \\omega s + {\\omega}^2}$$';
-      }
-      else if(type == 'integ') {
-        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s}$$';
-      }
-      else if(type == 'integlag') {
-        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s(\\tau s + 1)}$$';
-      }
-      else if(type == 'integdouble') {
-        eq = '$$\\frac{y(s)}{u(s)} = \\frac{k e^{-\\theta s}}{s^2}$$';
-      }
-      else {
-        eq = 'Unknown Model'
-      }
-      // NOTE : need to bind using v-html and the lines below
-      this.$nextTick(function() {
-	    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-	  });
-      return eq;
-	},
-	getModelParams(type) {
-
-	},
   }, // methods
 };
 

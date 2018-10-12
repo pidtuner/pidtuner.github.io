@@ -31,38 +31,39 @@ var PidTunerView = {
   },
   data() {
     return {
-      // array to be able to iterate for left menu creation
-      all_steps    : ['import_data','select_step','select_model','tune_pid'],
-      // states used for work-flow, enable/disable menu items, etc.
-      current_step : "import_data", 
-      latest_step  : "import_data",
-      show_message : true,
-      next_enabled : false,
-      step_loaded  : false,
-      // step 1 result. import_data
-      time   : [],
-      input  : [],
-      output : [],
-      // step 2 result. select step
-      cached_range_list : [],
-      selected_range    : [],
-      uniform_time      : [],
-      uniform_input     : [],
-      uniform_output    : [],
-      // step 3 result. select model
-      cached_model_list : [],
-      selected_model    : {},
-      // step 4 result : tune pid
-	  cached_gains_slider : 0,
+        // array to be able to iterate for left menu creation
+      proj_id             : 0,
+      all_steps           : ['import_data','select_step','select_model','tune_pid'],
+        // states used for work-flow, enable/disable menu items, etc.
+      current_step        : "import_data",
+      latest_step         : "import_data",
+      show_message        : true,
+      next_enabled        : false,
+      step_loaded         : false,
+        // step 1 result. import_data
+      time                : [],
+      input               : [],
+      output              : [],
+        // step 2 result. select step
+      cached_range_list   : [],
+      selected_range      : [],
+      uniform_time        : [],
+      uniform_input       : [],
+      uniform_output      : [],
+        // step 3 result. select model
+      cached_model_list   : [],
+      selected_model      : {},
+      // step 4 result    : tune pid
+      cached_gains_slider : 0,
       cached_time_slider  : 0,
       cached_r_size       : 1.0,
       cached_d_size       : 0.0,
       pid_gains           : [],
-      pidsim_time         : [],      
+      pidsim_time         : [],
       pidsim_input        : [],
       pidsim_output       : [],
-      pidsim_ref          : [],      
-      pidsim_dist         : [],      
+      pidsim_ref          : [],
+      pidsim_dist         : [],
     }
   },
   beforeMount: function() {
@@ -122,18 +123,83 @@ var PidTunerView = {
       </a>.
       `
     };
+    // create dixie db 
+    this.db = new Dexie("pidtuner");
+	this.db.version(1).stores({
+	  projdata: `proj_id,all_steps,current_step,latest_step,show_message,next_enabled,step_loaded,time,input,output,cached_range_list,selected_range,uniform_time,uniform_input,uniform_output,cached_model_list,selected_model,cached_gains_slider,cached_time_slider,cached_r_size,cached_d_size,pid_gains,pidsim_time,pidsim_input,pidsim_output,pidsim_ref,pidsim_dist`
+	});  
+	// create method to reuse
+	this.getDbObj = () => {
+		return this.db.projdata.where("proj_id").equals(0);
+	};
+	// try to load if any
+	this.getDbObj().first().then((data) => {
+			const dataKeys = Object.keys(this.$data);
+			if(data) {
+				// load vue data
+				for(var i = 0; i < dataKeys.length; i++) {
+					const currKey = dataKeys[i];
+					this[currKey] = data[currKey];
+				}
+				// load private data
+				if(!this.arma_models || this.arma_models.length == 0) {
+					this.arma_models = [];
+					for(var i = 0; i < this.cached_model_list.length; i++) {
+						var model_js   = this.cached_model_list[i];
+						var model_arma = new Arma.pid_model();
+						model_arma.set_type  (model_js.type);;
+						model_arma.set_params(cxmatFromRealArray(model_js.params));
+						model_arma.set_y     (cxmatFromRealArray(model_js.y     ));
+						model_arma.set_V     (cxmatFromRealArray(model_js.V     ));
+						this.arma_models.push(model_arma);
+					}
+				}
+				// TODO : bug in import_data, selection not working until click in table first
+				// TODO : in tune_pid only firefox, spinboxes show buttons
+				// TODO : button to reload test data
+				// TODO : implement undo ?
+			}
+			else {
+				// add it for the first time
+				this.createDbEntry();
+			}
+			// subscribe to changes
+			for(var i = 0; i < dataKeys.length; i++) {
+				const currKey = dataKeys[i];
+				// subscribe to changes
+				this.$watch(currKey, (value) => {
+					this.getDbObj().modify((db_obj) => {
+						db_obj[currKey] = value;
+					})
+				}, {
+					deep: true
+				});
+			}
+		})
+		.catch((err) => {
+			console.warn(err);
+		}); 
   },
   mounted: function() {
-    // setup close button
+    // setup close button for info
     $(this.$refs.close_button).on('click', function() {
       $(this).closest('.message').transition('fade') ;
     }).on('click', () => {
       setTimeout(() => {
         this.show_message = false;
       }, 300);
-    });             
+    });       
   },
   methods: {
+  	// create initial (one time) db entry
+  	createDbEntry : function() {
+  		this.db.projdata.add(this.$data).then(() => {
+			console.info("Project data being saved in memory from now on");
+		})
+		.catch((err) => {
+			console.warn(err);
+		});  
+  	},
     // check if should disable
     isStepDisabled: function(stepName) {
       return this.stepInfo[stepName].num > this.stepInfo[this.latest_step].num;
@@ -181,7 +247,9 @@ var PidTunerView = {
     	this.step_loaded = false; 
     	Vue.nextTick( () => { 
     		this.current_step = this.getNextStep(this.current_step); 
-    		this.latest_step  = this.current_step; 
+    		if(this.getNumber(this.latest_step) < this.getNumber(this.current_step)) {
+    			this.latest_step  = this.current_step; 
+    		}		
     		this.next_enabled = false; 
 		} );
     },

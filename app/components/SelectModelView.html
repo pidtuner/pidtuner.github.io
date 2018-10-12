@@ -12,11 +12,11 @@
 	<div class="row step-select-selected-row">
 		<div class="ui card model-select-card">
 		  <div class="image model-select-img-div">
-			<!--img :src="getModelImgUrl(internal_selected_model.type)" class="model-select-img"-->
-			<p v-html="getModelEquation(internal_selected_model.type)"></p>
+			<!--img :src="getModelImgUrl(selected_type)" class="model-select-img"-->
+			<p v-html="getModelEquation(selected_type)"></p>
 		  </div>
 		  <div class="content">
-			<a class="tiny header model-select-cardhead">{{ getModelName(internal_selected_model.type) }}</a>
+			<a class="tiny header model-select-cardhead">{{ getModelName(selected_type) }}</a>
 			<div class="description">
 				<div class="ui list">
 				  <div class="item" v-for="param in internal_selected_model_params">{{ param }}</div>
@@ -44,8 +44,8 @@
 					           'icon'              : true, 
 					           'button'            : true,
 					           'step-select-right' : true,
-					           'blue'              : internal_selected_model.type == model.type
-					           }">Select<i class="check icon" v-show="internal_selected_model.type == model.type"></i></div>
+					           'blue'              : selected_type == model.type
+					           }">Select<i class="check icon" v-show="selected_type == model.type"></i></div>
 			  </div>
 			</div>
 		</div>

@@ -127,3 +127,11 @@ const wasm = (() => {
     }
     return false;
 })();
+// Arma helpers
+var cxmatFromRealArray = (arr) => {
+  var ret = Arma.CxMat.zeros(arr.length, 1);
+  for(var k = 0; k < arr.length; k++) {
+    ret.set_at(k, 0, new Arma.cx_double(arr[k], 0));  
+  }
+  return ret;
+};
