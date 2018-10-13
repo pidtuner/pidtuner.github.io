@@ -453,7 +453,13 @@ var ImportDataView = {
     	this.hot_data = [['','','']]; 
     	this.on_afterChange();
     	this.$emit('latestStep');
-    }
+    },
+    loadTestData() {
+    	// use test data
+  		this.hot_data.copyFrom(test_data);
+		// init time, input, output
+		this.on_afterChange();
+    },
   },
   watch: {
 	ranges: function(){

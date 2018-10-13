@@ -3,8 +3,8 @@
   <div class="five wide column">
     <div class="ui one column grid">
       <div class="row import-clean-div">
-        <button class="fluid ui button" @click="clearTableClicked()">
-      		Clear Table
+        <button class="fluid ui button" @click="hot_data.length > 1 ? clearTableClicked() : loadTestData()">
+      		{{ hot_data.length > 1 ? "Clear Table" : "Load Test Data" }}
 	    </button>
       </div>
       <div class="row import-error-container" :disabled="!show_error">
