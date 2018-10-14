@@ -14,6 +14,11 @@ window.mainVue = new Vue({
       current_page : "home",
       list_social : [
           {
+            name : "linkedin",
+            url  : "https://www.linkedin.com/company/pidtuner",
+            icon : "linkedin"
+          },
+          {
             name : "twitter",
             url  : "https://twitter.com/pidtuner",
             icon : "twitter square"
