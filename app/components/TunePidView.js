@@ -355,7 +355,6 @@ var TunePidView = {
 		limits.set_at(1, 0, new Arma.cx_double(+Infinity, 0.0));
 		limits.set_at(2, 0, new Arma.cx_double(-du_lim  , 0.0));
 		limits.set_at(3, 0, new Arma.cx_double(+du_lim  , 0.0));
-
 		// get simulation time
 		var model = this.$parent.arma_models.find((model) => { return model.get_type() == this.selected_model.type });
 		var theta = Arma.CxMat.zeros(1, 1);
@@ -364,8 +363,6 @@ var TunePidView = {
 		var ts_r         = ts.real().to_array()[0][0];
 		var stime        = 160.0*Math.max(theta, ts_r);
 		var sim_length_r = Math.ceil(this.time_scale * Math.ceil(stime/ts_r));
-
-		
 		// NOTE : limit simulation resolution to N samples to avoid ui feeze
 		//        cannot be too small or oscillations appear in the simulation
 		var N        = 1200;
@@ -382,7 +379,6 @@ var TunePidView = {
 			sim_ts   = ts;
 			sim_ts_r = ts_r;
 		}
-
 		// arma vars for simulation
 		var sim_length   = Arma.CxMat.zeros(1, 1);
 		sim_length.set_at(0, 0, new Arma.cx_double(sim_length_r, 0.0));
@@ -399,15 +395,6 @@ var TunePidView = {
 			 r_sim.set_at(i, 0, new Arma.cx_double(r_value, 0)); 
 		}
 		// Create Input Disturbance
-		/*
-		// TODO : [BUG] dstep = cached_d_size = -Infinity when theta == 0 ?
-		var dstep = new Arma.cx_mat();
-		pid.dist_step(model.get_type(), model.get_params(), dstep);
-		this.cached_d_size = dstep.at(0, 0).real();
-		if(this.cached_d_size == Infinity || this.cached_d_size == -Infinity) {
-			this.cached_d_size = 0.0;
-		}
-		*/
 		this.pidsim_dist.splice(0, this.pidsim_dist.length);
 		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {

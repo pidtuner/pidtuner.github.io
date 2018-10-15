@@ -154,8 +154,7 @@ var PidTunerView = {
 						this.arma_models.push(model_arma);
 					}
 				}
-				// TODO : button to reload test data
-				// TODO : implement undo ?
+				
 			}
 			else {
 				// add it for the first time
@@ -168,7 +167,8 @@ var PidTunerView = {
 				this.$watch(currKey, (value) => {
 					this.getDbObj().modify((db_obj) => {
 						db_obj[currKey] = value;
-					})
+					});
+					// TODO : implement undo/redo stack here ?
 				}, {
 					deep: true
 				});
