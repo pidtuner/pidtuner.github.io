@@ -369,30 +369,25 @@ var SelectModelView = {
 		u_id = Arma.CxMat.zeros(x_size, 1).join_vert(u_id);
 		y_id = Arma.CxMat.zeros(x_size, 1).join_vert(y_id);
 		// identification
-		if(!this.$parent.arma_models) {
-			this.$parent.arma_models = [];
-		}
-		while(this.$parent.arma_models.length > 0) {
-			this.$parent.arma_models.splice(0, 1)[0].destroy();
-		}
+		var arma_models = [];
 		for(var i = 0; i < 5; i++) {
-			this.$parent.arma_models.push(new Arma.pid_model());
+			arma_models.push(new Arma.pid_model());
 		}
-		pid.find_model(u_id, y_id, ts_id, this.$parent.arma_models[0], 
-		                                  this.$parent.arma_models[1], 
-		                                  this.$parent.arma_models[2], 
-		                                  this.$parent.arma_models[3], 
-		                                  this.$parent.arma_models[4]);
+		pid.find_model(u_id, y_id, ts_id, arma_models[0], 
+		                                  arma_models[1], 
+		                                  arma_models[2], 
+		                                  arma_models[3], 
+		                                  arma_models[4]);
 		// create output array
 		var model_list = [];
 		var j = 0;
-		for(var i = 0; i < this.$parent.arma_models.length; i++) {
+		for(var i = 0; i < arma_models.length; i++) {
 	      // create output sim
-	      var type   = this.$parent.arma_models[i].get_type();
-	      var params = this.$parent.arma_models[i].get_params();
-	      var Voptim = this.$parent.arma_models[i].get_V().real().to_array()[0][0];
+	      var type   = arma_models[i].get_type();
+	      var params = arma_models[i].get_params();
+	      var Voptim = arma_models[i].get_V().real().to_array()[0][0];
 	      // check if should be added
-	      if(i != 0 && !(this.$parent.arma_models[0].get_type() == '2ndord' && type == '1stord') && 
+	      if(i != 0 && !(arma_models[0].get_type() == '2ndord' && type == '1stord') && 
 	         model_list[j-1].V < (1e-1)*Voptim) {
 	      	continue;
 	      }
@@ -409,6 +404,10 @@ var SelectModelView = {
 	        V     : Voptim,
 	        y     : y_detrend.real().to_array().map(arr => arr[0])
 	      });
+		}
+		// clean up 
+		while(arma_models.length > 0) {
+			arma_models.splice(0, 1)[0].destroy();
 		}
 		// update cache
 		this.cached_model_list.copyFrom(model_list);

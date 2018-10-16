@@ -141,20 +141,6 @@ var PidTunerView = {
 					const currKey = dataKeys[i];
 					this[currKey] = data[currKey];
 				}
-				// load private data
-				if(!this.arma_models || this.arma_models.length == 0) {
-					this.arma_models = [];
-					for(var i = 0; i < this.cached_model_list.length; i++) {
-						var model_js   = this.cached_model_list[i];
-						var model_arma = new Arma.pid_model();
-						model_arma.set_type  (model_js.type);;
-						model_arma.set_params(cxmatFromRealArray(model_js.params));
-						model_arma.set_y     (cxmatFromRealArray(model_js.y     ));
-						model_arma.set_V     (cxmatFromRealArray(model_js.V     ));
-						this.arma_models.push(model_arma);
-					}
-				}
-				// TODO : button to reload test data
 				// TODO : implement undo ?
 			}
 			else {
@@ -261,9 +247,6 @@ var PidTunerView = {
     resetStep3() {
 	  this.cached_model_list.splice(0, this.cached_model_list.length);
 	  this.selected_model = {};	  
-	  while(this.arma_models && this.arma_models.length > 0) {
-	  	this.arma_models.splice(0, 1)[0].destroy();
-	  }
     },
     resetStep4() {
       this.cached_gains_slider = 0;
