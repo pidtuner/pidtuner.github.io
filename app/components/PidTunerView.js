@@ -67,6 +67,19 @@ var PidTunerView = {
     }
   },
   beforeMount: function() {
+  	// [UNDO] global event listeners
+  	// TODO : child components not ready for UNDO
+  	/*
+	window.addEventListener('keyup', (e) => {
+		var evtobj = window.event? event : e
+      	if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
+      		this.undo();
+      	}
+      	else if (evtobj.keyCode == 89 && evtobj.ctrlKey) {
+      		this.redo();
+      	}
+	});
+	*/
     // create steps info
     this.stepInfo = {};
     this.stepInfo['import_data' ] = {
@@ -141,7 +154,6 @@ var PidTunerView = {
 					const currKey = dataKeys[i];
 					this[currKey] = data[currKey];
 				}
-				// TODO : implement undo ?
 			}
 			else {
 				// add it for the first time
@@ -150,11 +162,10 @@ var PidTunerView = {
 			// subscribe to changes
 			for(var i = 0; i < dataKeys.length; i++) {
 				const currKey = dataKeys[i];
-				// subscribe to changes
+				// subscribe to each key in data
 				this.$watch(currKey, (value) => {
-					this.getDbObj().modify((db_obj) => {
-						db_obj[currKey] = value;
-					})
+					// update key in IndexedDb
+					this.updateDbEntry(currKey, value);
 				}, {
 					deep: true
 				});
@@ -183,6 +194,44 @@ var PidTunerView = {
 		.catch((err) => {
 			console.warn(err);
 		});  
+  	},
+  	updateDbEntry : function(key, val) {
+		// create cache if not exists
+  		if(!this.update_db_cache) {
+  			this.update_db_cache = {};
+  		}
+  		// add undo value to cache 
+  		this.update_db_cache[key] = val;
+  		// create throttle func if not exists
+  		if(!this.throttle_updateDbEntry) {
+			this.throttle_updateDbEntry = throttle(() => {
+				// update stored state in IndexedDb
+				this.getDbObj().modify((dbObj) => {
+					// get keys to update in db 
+					var dbKeys = Object.keys(this.update_db_cache);
+					for(var i = 0; i < dbKeys.length; i++) {
+						const dbKey = dbKeys[i];
+						const dbVal = this.update_db_cache[dbKey];
+						// ignore if not changed (to avoid feedback in undo stack)
+						if(dbObj[dbKey] == dbVal ||
+						   (typeof dbObj[dbKey].isEqual == "function" && dbObj[dbKey].isEqual(dbVal)) || // if array
+						   (typeof dbObj[dbKey].isEqual == "undefined" && Object.isObjEqual(dbObj[dbKey], dbVal)) // if object
+						  ) {
+							continue;
+						}
+						// [UNDO] push old value to undo stack before updating
+						// TODO : child components not ready for UNDO
+						// this.addUndo(dbKey, dbObj[dbKey]);
+						// update IndexedDb value
+						dbObj[dbKey] = dbVal;				
+					}
+					// clean cache
+					this.update_db_cache = {};
+				});					
+			}, 200, { leading : false });
+  		}
+  		// call 
+  		this.throttle_updateDbEntry();	
   	},
     // check if should disable
     isStepDisabled: function(stepName) {
@@ -259,7 +308,66 @@ var PidTunerView = {
       this.pidsim_output.splice(0, this.pidsim_output.length);
       this.pidsim_ref   .splice(0, this.pidsim_ref   .length);      
       this.pidsim_dist  .splice(0, this.pidsim_dist  .length);      
+    },
+    addUndo : function(key, valOld) {
+    	// [UNDO] 
+  		// create cache if not exists
+  		if(!this.undo_stack_cache) {
+  			this.undo_stack_cache = {};
+  		}
+  		// add undo value to cache 
+  		this.undo_stack_cache[key] = valOld;
+  		// create throttle func if not exists
+  		if(!this.throttle_addUndo) {
+			this.throttle_addUndo = throttle(() => {
+				// add cache to undo stack
+				this.undo_stack.push(this.undo_stack_cache);	
+				// clear cache
+				this.undo_stack_cache = {};
+			}, 200, { leading : false });
+  		}
+  		// call 
+  		this.throttle_addUndo();		
+  	},
+    undo() {
+    	// [UNDO] 
+    	// nothing to do here
+    	if(this.undo_stack.length <= 0) {
+    		return;
+    	}
+    	// loop keys to undo 
+    	var undoObj  = this.undo_stack.pop();
+    	var undoKeys = Object.keys(undoObj);	
+		// set first in IndexedDb to avoid loop
+		this.getDbObj().modify((db_obj) => {
+			for(var i = 0; i < undoKeys.length; i++) {
+				const undoKey = undoKeys[i];
+				// update IndexedDb
+				db_obj[undoKey] = undoObj[undoKey];
+				// update Vue data later
+				this.$nextTick(() => {
+					this[undoKey] = undoObj[undoKey];
+				});
+			}
+		});
+    },
+    redo() {
+    	// [UNDO] 
+    	console.log('redo');    	
     }
+  }, //methods
+  computed: {
+    undo_stack: {
+		get: function() { 
+			if(!this.internal_undo) {
+				this.internal_undo = [];
+			}
+			return this.internal_undo;
+		},
+		set: function(val) {
+			this.internal_undo = val;		
+		}    
+	}
   },
   watch: {
 	latest_step: function(){

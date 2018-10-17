@@ -55,6 +55,9 @@ Array.prototype.isEqual = function(other) {
         if(typeof elem == 'Array') {
             res = res && this[i].isEqual(elem);
         }
+        else if(typeof elem == 'object') {
+            res = res &&  Object.isObjEqual(this[i], elem);
+        }
         else {
             res = res && (this[i] == elem);
         }
@@ -76,6 +79,37 @@ if(!Object.isEmpty) {
     Object.keys(obj).length === 0 && obj.constructor === Object
   }
 }
+// add isObjEqual
+if(!Object.isObjEqual) {
+  Object.isObjEqual = function(a, b) {
+    var p, t;
+    for (p in a) {
+      if (typeof b[p] === 'undefined') {
+        return false;
+      }
+      if (b[p] && !a[p]) {
+        return false;
+      }
+      t = typeof a[p];
+      if (t === 'object' && !isEqual(a[p], b[p])) {
+        return false;
+      }
+      if (t === 'function' && (typeof b[p] === 'undefined' || a[p].toString() !== b[p].toString())) {
+        return false;
+      }
+      if (a[p] !== b[p]) {
+        return false;
+      }
+    }
+    for (p in b) {
+      if (typeof a[p] === 'undefined') {
+        return false;
+      }
+    }
+    return true;
+  };
+}
+
 // throttle : https://stackoverflow.com/questions/27078285/simple-throttle-in-js
 // Returns a function, that, when invoked, will only be triggered at most once
 // during a given window of time. Normally, the throttled function will run

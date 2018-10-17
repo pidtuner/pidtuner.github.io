@@ -40,6 +40,7 @@ var ImportDataView = {
 	  hot_display  : false, // Fixed hot rendering issue
       hot_data     : [['','','']],
       hot_settings : {
+          copyPaste: true,
           colHeaders           : true ,
           rowHeaders           : true ,
           stretchH             : 'all',
@@ -115,8 +116,18 @@ var ImportDataView = {
       // NOTE : need to modify this.hot_data directly
       contextMenu: {
         items: {
+		  "copy_inside": {
+            name: 'Copy Selection',
+            callback: () => { 
+				var plugin = this.table.getPlugin('CopyPaste');
+				// NOTE : need to re-select for this to work
+				this.table.selectCell(this.table.getSelected()[0][0], this.table.getSelected()[0][1], this.table.getSelected()[0][2], this.table.getSelected()[0][3]);
+				plugin.setCopyableText();
+    			plugin.copy(true);
+            }
+          },
           "paste": {
-            name: 'To paste please use ctrl-v',
+            name: 'Paste : Use Ctrl-V',
             disabled: function() {
 			  return true;
 			},
