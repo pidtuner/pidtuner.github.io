@@ -222,7 +222,7 @@ var TunePidView = {
     gains_scale : function() {
     	// y = Math.pow(10, x) maps [-1, +1] to [0.1, 10]
     	// NOTE : minus sign, inverted in this case, because 0.1 will yield faster dynamics than 10
-		return Math.pow(10, (-this.cached_gains_slider)/this.slider_res);
+		return Math.pow(100, (-this.cached_gains_slider)/this.slider_res); // 100 => [0.01 - 100]
     },
     time_scale : function() {
     	// at most 5x the simulation length

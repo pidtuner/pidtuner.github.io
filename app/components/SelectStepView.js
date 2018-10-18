@@ -134,67 +134,77 @@ var SelectStepView = {
 		// update or cache
 		var steps_arr = [];
 		if(this.cached_range_list.length <= 0) {
-			// copy
-			var arma_time   = [];
-			var arma_input  = [];
-			var arma_output = [];
-			for(var i = 0; i < this.time.length; i++) {
-				arma_time  .push([[this.time  [i], 0]]);
-				arma_input .push([[this.input [i], 0]]);
-				arma_output.push([[this.output[i], 0]]);
+			try {
+				// copy
+				var arma_time   = [];
+				var arma_input  = [];
+				var arma_output = [];
+				for(var i = 0; i < this.time.length; i++) {
+					arma_time  .push([[this.time  [i], 0]]);
+					arma_input .push([[this.input [i], 0]]);
+					arma_output.push([[this.output[i], 0]]);
+				}
+				// instantiate arma matrices
+				var t = Arma.CxMat.from_array(arma_time  );
+				var u = Arma.CxMat.from_array(arma_input );
+				var y = Arma.CxMat.from_array(arma_output);
+				// fix dimansions
+				if(t.get_n_cols() != 1) {
+					t = t.t();
+				}
+				if(u.get_n_cols() != 1) {
+					u = u.t();
+				}
+				if(y.get_n_cols() != 1) {
+					y = y.t();
+				}
+				// possible sample period
+				var ts     = Arma.CxMat.zeros(1, 1);
+				ts.set_at(0, 0, t.at(1, 0).rest(t.at(0, 0)));
+				// handle possible non-uniform time vector
+				if(!pid.ts_uniform(t)) {
+					var t_new   = new Arma.cx_mat();
+					var u_new   = new Arma.cx_mat();
+					var y_new   = new Arma.cx_mat();
+					var ts_real = pid.resample(t, u, y, -1.0, t_new, u_new, y_new);
+					ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
+					t = t_new;
+					u = u_new;
+					y = y_new;
+				}
+				// update uniform time, input and output
+				this.uniform_time  .splice(0, this.uniform_time.length  );
+				this.uniform_input .splice(0, this.uniform_input.length );
+				this.uniform_output.splice(0, this.uniform_output.length);
+				var uniform_t = t.real().to_array().map(arr => arr[0]);
+				var uniform_u = u.real().to_array().map(arr => arr[0]);
+				var uniform_y = y.real().to_array().map(arr => arr[0]);
+				this.uniform_time  .copyFrom(uniform_t);
+				this.uniform_input .copyFrom(uniform_u);
+				this.uniform_output.copyFrom(uniform_y);
+				// find steps
+				var steps = new Arma.cx_mat();
+				pid.find_steps(t, u, y, steps);		
+				// update cache
+				steps_arr = steps.to_array();
+				// fix to always have same start and limit to max 8 steps
+				if(steps_arr.length > 8) {
+					steps_arr.splice(8, steps_arr.length  );
+				}
+				for(var i = 1; i < steps_arr.length; i++) {
+					steps_arr[i][0] = steps_arr[0][0];
+				}
+				// save in cache
+				this.cached_range_list.copyFrom(steps_arr);
 			}
-			// instantiate arma matrices
-			var t = Arma.CxMat.from_array(arma_time  );
-			var u = Arma.CxMat.from_array(arma_input );
-			var y = Arma.CxMat.from_array(arma_output);
-			// fix dimansions
-			if(t.get_n_cols() != 1) {
-				t = t.t();
+			catch(err) {
+				console.info( err );
+				this.$nextTick( () => {
+					$(this.$refs.dialog).modal('show');
+				});
+				// return
+				return steps_arr;
 			}
-			if(u.get_n_cols() != 1) {
-				u = u.t();
-			}
-			if(y.get_n_cols() != 1) {
-				y = y.t();
-			}
-			// possible sample period
-			var ts     = Arma.CxMat.zeros(1, 1);
-			ts.set_at(0, 0, t.at(1, 0).rest(t.at(0, 0)));
-			// handle possible non-uniform time vector
-			if(!pid.ts_uniform(t)) {
-				var t_new   = new Arma.cx_mat();
-				var u_new   = new Arma.cx_mat();
-				var y_new   = new Arma.cx_mat();
-				var ts_real = pid.resample(t, u, y, -1.0, t_new, u_new, y_new);
-				ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
-				t = t_new;
-				u = u_new;
-				y = y_new;
-			}
-			// update uniform time, input and output
-			this.uniform_time  .splice(0, this.uniform_time.length  );
-			this.uniform_input .splice(0, this.uniform_input.length );
-			this.uniform_output.splice(0, this.uniform_output.length);
-			var uniform_t = t.real().to_array().map(arr => arr[0]);
-			var uniform_u = u.real().to_array().map(arr => arr[0]);
-			var uniform_y = y.real().to_array().map(arr => arr[0]);
-			this.uniform_time  .copyFrom(uniform_t);
-			this.uniform_input .copyFrom(uniform_u);
-			this.uniform_output.copyFrom(uniform_y);
-			// find steps
-			var steps = new Arma.cx_mat();
-			pid.find_steps(t, u, y, steps);		
-			// update cache
-			steps_arr = steps.to_array();
-			// fix to always have same start and limit to max 8 steps
-			if(steps_arr.length > 8) {
-				steps_arr.splice(8, steps_arr.length  );
-			}
-			for(var i = 1; i < steps_arr.length; i++) {
-				steps_arr[i][0] = steps_arr[0][0];
-			}
-			// save in cache
-			this.cached_range_list.copyFrom(steps_arr);
 		}
 		else {
 			// use cache
@@ -217,7 +227,7 @@ var SelectStepView = {
     	// [ALT]
     	return this.output_chart_data.datasets[0].data.length;
     }
-  },
+  }, // computed
   methods: {
     getLabels(data) {
 		var out_labels = [];
