@@ -9,6 +9,8 @@ var scriptTunePidViewDir = listUrl.join("/");
 getTunePidViewComponent = async function() {
 // ------------------------------------------------------------------------
 
+await getLogChartViewComponent();
+
 // get template for component
 var templTunePidView;
 await $.asyncGet(scriptTunePidViewDir + "TunePidView.html", function(data){
@@ -72,16 +74,21 @@ var TunePidView = {
   },
   data() {
     return {
-      r_time        : 0.01,
-      d_time        : 0.51,
+      r_time               : 0.01,
+      d_time               : 0.51,
       // helpers
       slider_res           : 50, // slider native resolution to from -slider_res to +slider_res
       slider_gains_enabled : true,
       max_chart_len        : 300,
+      tab_active           : 'time_step',
+      // bode
+      pidsim_w    : [],
+      pidsim_mag  : [],
+      pidsim_pha  : [],
     }
   },
   mounted: function() {
-	// setup sliders
+  	// setup sliders
 	$(this.$refs.slider_gains).range({
 		min   : -this.slider_res,
 		max   : +this.slider_res,
@@ -148,7 +155,7 @@ var TunePidView = {
 	  	});
 	  	in_data_dist.push({
 	  		x : this.pidsim_time [idx],
-	  		y : /*this.pidsim_input[idx] +*/ this.pidsim_dist[idx]
+	  		y : this.pidsim_dist[idx]
 	  	});
 	  	if(idx == this.pidsim_time.length-1) {
 	  		break;
@@ -219,6 +226,56 @@ var TunePidView = {
       };
       return out_chart_data;
     }, // output_chart_data
+    mag_bode_data: function() {
+	  // first create data
+	  var mag_data      = [];
+	  // [ALT]
+	  for(var i = 0; i < this.pidsim_w.length; i++) {
+	  	mag_data.push({
+	  		x : this.pidsim_w  [i],
+	  		y : this.pidsim_mag[i]
+	  	});
+	  }
+	  // then datasets
+	  var mag_datasets = [
+	  	{
+		  label          : 'Magnitude',
+		  data           : mag_data,
+		  borderColor    : '#2185D0',
+		}
+	  ];
+	  // finally chart data
+	  var mag_chart_data = {
+         labels  : this.getLabels(mag_data),
+         datasets: mag_datasets,
+      };
+      return mag_chart_data;
+    }, // mag_bode_data
+    pha_bode_data: function() {
+	  // first create data
+	  var pha_data      = [];
+	  // [ALT]
+	  for(var i = 0; i < this.pidsim_w.length; i++) {
+	  	pha_data.push({
+	  		x : this.pidsim_w  [i],
+	  		y : this.pidsim_pha[i]
+	  	});
+	  }
+	  // then datasets
+	  var pha_datasets = [
+	  	{
+		  label          : 'Phase',
+		  data           : pha_data,
+		  borderColor    : '#2185D0',
+		}
+	  ];
+	  // finally chart data
+	  var pha_chart_data = {
+         labels  : this.getLabels(pha_data),
+         datasets: pha_datasets,
+      };
+      return pha_chart_data;
+    }, // pha_bode_data
     gains_scale : function() {
     	// y = Math.pow(10, x) maps [-1, +1] to [0.1, 10]
     	// NOTE : minus sign, inverted in this case, because 0.1 will yield faster dynamics than 10
@@ -395,23 +452,39 @@ var TunePidView = {
 			 d_sim.set_at(i, 0, new Arma.cx_double(d_value, 0)); 
 		}
 
-		// make simulation
+		// make time simulation
 		var u_sim = new Arma.cx_mat();
 		var y_sim = new Arma.cx_mat();
 		pid.sim_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params), this.arma_gains, limits, sim_ts, sim_length, r_sim, d_sim, u_sim, y_sim);
-
-		this.pidsim_time  .splice(0, this.pidsim_time  .length);
-		this.pidsim_input .splice(0, this.pidsim_input .length);
-		this.pidsim_output.splice(0, this.pidsim_output.length);
 
 		var u_sim_r = u_sim.real().to_array().map(arr => arr[0]);
 		var y_sim_r = y_sim.real().to_array().map(arr => arr[0]);
 
 		this.pidsim_input .copyFrom(u_sim_r);
 		this.pidsim_output.copyFrom(y_sim_r);
+		this.pidsim_time  .splice(0, this.pidsim_time  .length);
 		for(var i = 0; i < sim_length_r; i++) {
 			this.pidsim_time.push(i * sim_ts_r);
 		}
+
+		// make bode plot
+		var model = new Arma.pid_model();
+		model.set_type  (this.selected_model.type);
+		model.set_params(cxmatFromRealArray(this.selected_model.params));
+		model.set_gains (this.arma_gains);
+		var samples = Arma.CxMat.zeros(1, 1);
+    	samples.set_at(0, 0, new Arma.cx_double(100, 0.0));
+    	var w   = new Arma.cx_mat();
+		var mag = new Arma.cx_mat();
+		var pha = new Arma.cx_mat();
+		model.get_bode(samples, w, mag, pha);
+		var w_r   = w  .real().to_array().map(arr => arr[0]);
+		var mag_r = mag.real().to_array().map(arr => arr[0]);
+		var pha_r = pha.real().to_array().map(arr => arr[0]);
+		this.pidsim_w  .copyFrom(w_r  );
+		this.pidsim_mag.copyFrom(mag_r);
+		this.pidsim_pha.copyFrom(pha_r);
+
 	},
 	setOriginalGains() {
 		// enable gains slider 

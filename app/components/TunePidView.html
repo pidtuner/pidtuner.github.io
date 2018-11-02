@@ -51,14 +51,13 @@
 
 		<div class="ui divider"></div>
 
-		<div class="row step-select-selected-row">
+		
+		<div v-show="tab_active == 'time_step'" class="row step-select-selected-row">
 			<h4 class="ui center aligned header">
 				Simulation
 			</h4>
 		</div>
-
-
-		<div class="row ui segment tune-pid-slider">
+		<div v-show="tab_active == 'time_step'" class="row ui segment tune-pid-slider">
 			<div class="ui fuild grid container middle aligned" id="tune-pid-sliderdiv-2">
 				<div class="four wide column tune-pid-slidertext">
 					Duration
@@ -68,8 +67,7 @@
 				</div>
 			</div>
 		</div>
-
-		<div class="row ui fluid labeled input tune-pid-gain">
+		<div v-show="tab_active == 'time_step'" class="row ui fluid labeled input tune-pid-gain">
 		  <div class="ui label tune-pid-label step-selected-showifbig">
 			Reference
 		  </div>
@@ -84,8 +82,7 @@
 		  </div>
 		  <i class="pencil large icon tune-pid-editicon"></i>
 		</div>
-
-		<div class="row ui fluid labeled input tune-pid-gain">
+		<div v-show="tab_active == 'time_step'" class="row ui fluid labeled input tune-pid-gain">
 		  <div class="ui label tune-pid-label step-selected-showifbig">
 			Disturbance
 		  </div>
@@ -101,25 +98,60 @@
 		  <i class="pencil large icon tune-pid-editicon"></i>
 		</div>
 
+
+
     </div>
   </div>
 
-  <div class="eleven wide column">
-	<line-chart :chart-data="output_chart_data" 
-	            :ranges_enabled="false"
-	            :ranges="[]"
-	            :cssClasses="'import-chart'"
-	            >
-	</line-chart>
-	<line-chart :chart-data="input_chart_data"  
-	            :ranges_enabled="false"
-	            :ranges="[]"
-	            :cssClasses="'import-chart'"
-	            >
-	</line-chart>
-
-
-
+  <div class="eleven wide column tune-pid-nopadtop">
+	<div class="ui top attached tabular menu">
+		<div :class="{'item': true, 'active' : tab_active == 'time_step'}" @click="tab_active = 'time_step'">Time Step</div>
+		<div :class="{'item': true, 'active' : tab_active == 'bode_plot'}" @click="tab_active = 'bode_plot'">Bode Plot</div>
+	</div>
+	<div :class="{
+				   'ui bottom attached tab segment tune-pid-nopadtop' : true,
+				   'active' : tab_active == 'time_step',
+				 }">
+		<line-chart :chart-data="output_chart_data" 
+					:ranges_enabled="false"
+					:ranges="[]"
+					:cssClasses="'import-chart'"
+					>
+		</line-chart>
+		<line-chart :chart-data="input_chart_data"  
+					:ranges_enabled="false"
+					:ranges="[]"
+					:cssClasses="'import-chart'"
+					>
+		</line-chart>		
+	</div>
+	<div :class="{
+				   'ui bottom attached tab segment tune-pid-nopadtop' : true,
+				   'active' : tab_active == 'bode_plot',
+				 }">
+		<log-chart :chart-data="mag_bode_data" 
+				   :cssClasses="'import-chart'"
+				   :xrange="{
+				   		min  : pidsim_w[0],
+				   		max  : pidsim_w[pidsim_w.length-1],
+				   }"
+				   :ylabel="'Decibels'"
+				   >
+		</log-chart>
+		<log-chart :chart-data="pha_bode_data"  
+				   :cssClasses="'import-chart'"
+				   :xrange="{
+				   		min  : pidsim_w[0],
+				   		max  : pidsim_w[pidsim_w.length-1],
+				   }"
+				   :yrange="{
+				   		min : -200,
+				   		max : 0   ,
+				   }"
+				   :ylabel="'Degrees'"
+				   >
+		</log-chart>	
+	</div>
   </div>
 
 </div>

@@ -1,7 +1,7 @@
 <div class="ui stackable grid pid-tuner-root">
-	<div class="computer only one wide column"></div>
+	<div class="computer only one wide column pid-tuner-cols"></div>
 
-	<div class="tablet only four wide tablet three wide computer column">
+	<div class="tablet only four wide tablet three wide computer column pid-tuner-cols">
 		<div class="ui one column">
 			<div class="row">
 				<div class="ui fluid vertical steps pid-tuner-steps">  
@@ -33,7 +33,7 @@
 	</div>
 
 	<div :class="{
-                   'twelve wide tablet eleven wide computer column'  : true, 
+                   'twelve wide tablet eleven wide computer column pid-tuner-cols'  : true, 
                    'ui loading segment' : !step_loaded,
                  }">
 		<div class="ui stackable grid">
@@ -99,5 +99,5 @@
 
 	</div>
 
-	<div class="computer only one wide column"></div>
+	<div class="computer only one wide column pid-tuner-cols"></div>
 </div>

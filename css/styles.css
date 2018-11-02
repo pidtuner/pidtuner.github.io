@@ -237,11 +237,9 @@ PID TUNER COMPONENT */
   padding : 0 !important;
 }
 
-/*
-.pid-tuner-steps {
-  margin-top: 55% !important;
+.pid-tuner-cols {
+  padding-top 0 !important;
 }
-*/
 
 /* ***********************************************************************
 IMPORT COMPONENT */
@@ -396,8 +394,21 @@ input[type=number] {
 }
 
 .tune-pid-editicon {
-  position: absolute !important;
-  color : #8c8c8c !important;
+  position   : absolute !important;
+  color      : #8c8c8c !important;
   margin-left: -5px !important;
-  margin-top: -5px !important;
+  margin-top : -5px !important;
+}
+
+.tune-pid-diag-input {
+  margin-bottom: 1em !important;
+}
+
+.ui.modal .header,
+.ui.modal .actions{
+  cursor: move;
+}
+
+div.tabular {
+  cursor: pointer;  
 }

@@ -215,7 +215,7 @@ var PidTunerView = {
 						// ignore if not changed (to avoid feedback in undo stack)
 						if(dbObj[dbKey] == dbVal ||
 						   (typeof dbObj[dbKey].isEqual == "function" && dbObj[dbKey].isEqual(dbVal)) || // if array
-						   (typeof dbObj[dbKey].isEqual == "undefined" && Object.isObjEqual(dbObj[dbKey], dbVal)) // if object
+						   (typeof dbObj[dbKey].isEqual == "undefined" && Object.isObjEqual(dbObj[dbKey], dbVal) && typeof dbVal != "number") // if object
 						  ) {
 							continue;
 						}
