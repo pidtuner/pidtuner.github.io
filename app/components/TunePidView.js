@@ -71,6 +71,22 @@ var TunePidView = {
       type    : Array,
       required: true
     },
+    margins: {
+      type    : Array,
+      required: true
+    },
+    bode_w: {
+      type    : Array,
+      required: true
+    },
+    bode_mag: {
+      type    : Array,
+      required: true
+    },
+    bode_pha: {
+      type    : Array,
+      required: true
+    },
   },
   data() {
     return {
@@ -81,10 +97,6 @@ var TunePidView = {
       slider_gains_enabled : true,
       max_chart_len        : 300,
       tab_active           : 'time_step',
-      // bode
-      pidsim_w    : [],
-      pidsim_mag  : [],
-      pidsim_pha  : [],
     }
   },
   mounted: function() {
@@ -229,11 +241,13 @@ var TunePidView = {
     mag_bode_data: function() {
 	  // first create data
 	  var mag_data      = [];
+	  // if not yet defined
+	  if(!this.bode_w) { return mag_data; }
 	  // [ALT]
-	  for(var i = 0; i < this.pidsim_w.length; i++) {
+	  for(var i = 0; i < this.bode_w.length; i++) {
 	  	mag_data.push({
-	  		x : this.pidsim_w  [i],
-	  		y : this.pidsim_mag[i]
+	  		x : this.bode_w  [i],
+	  		y : this.bode_mag[i]
 	  	});
 	  }
 	  // then datasets
@@ -254,11 +268,13 @@ var TunePidView = {
     pha_bode_data: function() {
 	  // first create data
 	  var pha_data      = [];
+	  // if not yet defined
+	  if(!this.bode_w) { return pha_data; }
 	  // [ALT]
-	  for(var i = 0; i < this.pidsim_w.length; i++) {
+	  for(var i = 0; i < this.bode_w.length; i++) {
 	  	pha_data.push({
-	  		x : this.pidsim_w  [i],
-	  		y : this.pidsim_pha[i]
+	  		x : this.bode_w  [i],
+	  		y : this.bode_pha[i]
 	  	});
 	  }
 	  // then datasets
@@ -293,6 +309,22 @@ var TunePidView = {
     	// [ALT]
     	return this.output_chart_data.datasets[0].data.length;
     },
+    bode_w_min : function() {
+		if(this.bode_w) {
+			return this.bode_w[0];
+		}
+		else {
+			return 0;
+		}
+	},
+	bode_w_max : function() {
+		if(this.bode_w) {
+			return this.bode_w[this.bode_w.length-1];
+		}
+		else {
+			return 0;
+		}
+	}
   }, // computed
   methods: {
     getLabels(data) {
@@ -481,9 +513,45 @@ var TunePidView = {
 		var w_r   = w  .real().to_array().map(arr => arr[0]);
 		var mag_r = mag.real().to_array().map(arr => arr[0]);
 		var pha_r = pha.real().to_array().map(arr => arr[0]);
-		this.pidsim_w  .copyFrom(w_r  );
-		this.pidsim_mag.copyFrom(mag_r);
-		this.pidsim_pha.copyFrom(pha_r);
+		this.bode_w  .copyFrom(w_r  );
+		this.bode_mag.copyFrom(mag_r);
+		this.bode_pha.copyFrom(pha_r);
+
+		// compute margins
+		var Gm  = new Arma.cx_mat();
+		var Pm  = new Arma.cx_mat();
+		var Wcg = new Arma.cx_mat();
+		var Wcp = new Arma.cx_mat();
+		model.get_margins(Gm, Pm, Wcg, Wcp);
+		this.margins
+			.copyFrom([{
+					    name    : 'Gm',
+					    val     : Gm .real().to_array()[0][0] ,
+					    units   : '[dB]',
+					    descrip : 'Gain Margin',
+					    editable: false
+					   },
+					   {
+					    name    : 'GmF',
+					    val     : Wcg.real().to_array()[0][0] ,
+					    units   : '[rad/s]',
+					    descrip : 'G.M. Frequency',
+					    editable: false
+					   },
+					   {
+					    name    : 'Pm',
+					    val     : Pm .real().to_array()[0][0],
+					    units   : '[deg]',
+					    descrip : 'Phase Margin',
+					    editable: false
+					   },				   
+					   {
+					    name    : 'PmF',
+					    val     : Wcp.real().to_array()[0][0] ,
+					    units   : '[rad/s]',
+					    descrip : 'P.M. Frequency',
+					    editable: false
+					   }]);
 
 	},
 	setOriginalGains() {
@@ -502,6 +570,9 @@ var TunePidView = {
 	},
 	findGain(name) {
 		return this.pid_gains.find((gain) => { return gain.name == name });
+	},
+	findMargin(name) {
+		return this.margins.find((margin) => { return margin.name == name });
 	},
 	createArmaGains() {
 		if(!this.arma_gains) {

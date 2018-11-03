@@ -51,7 +51,8 @@
 
 		<div class="ui divider"></div>
 
-		
+		<!-- TIME STEP -->
+
 		<div v-show="tab_active == 'time_step'" class="row step-select-selected-row">
 			<h4 class="ui center aligned header">
 				Simulation
@@ -98,6 +99,27 @@
 		  <i class="pencil large icon tune-pid-editicon"></i>
 		</div>
 
+		<!-- BODE PLOT -->
+
+		<div v-show="tab_active == 'bode_plot'" class="row step-select-selected-row">
+			<h4 class="ui center aligned header">
+				Stability Margins
+			</h4>
+		</div>
+
+		<div v-show="tab_active == 'bode_plot'"  class="row ui fluid labeled input tune-pid-gain" v-for="margin in margins">
+		  <div class="ui label tune-pid-label step-selected-showifbig">
+			{{ margin.descrip }}
+		  </div>
+		  <div class="ui label tune-pid-label step-selected-showifsmall">
+			{{ margin.name }}
+		  </div>
+		  <input readonly class="tune-pid-readonly" type="number" v-model="margin.val">
+		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
+			{{ margin.units }}
+		  </div>
+		</div>
+
 
 
     </div>
@@ -132,8 +154,8 @@
 		<log-chart :chart-data="mag_bode_data" 
 				   :cssClasses="'import-chart'"
 				   :xrange="{
-				   		min  : pidsim_w[0],
-				   		max  : pidsim_w[pidsim_w.length-1],
+				   		min  : bode_w_min,
+				   		max  : bode_w_max,
 				   }"
 				   :ylabel="'Decibels'"
 				   >
@@ -141,8 +163,8 @@
 		<log-chart :chart-data="pha_bode_data"  
 				   :cssClasses="'import-chart'"
 				   :xrange="{
-				   		min  : pidsim_w[0],
-				   		max  : pidsim_w[pidsim_w.length-1],
+				   		min  : bode_w_min,
+				   		max  : bode_w_max,
 				   }"
 				   :yrange="{
 				   		min : -200,

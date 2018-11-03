@@ -64,6 +64,10 @@ var PidTunerView = {
       pidsim_output       : [],
       pidsim_ref          : [],
       pidsim_dist         : [],
+      margins             : [],
+      bode_w              : [],
+	  bode_mag            : [],
+	  bode_pha            : [],
     }
   },
   beforeMount: function() {
@@ -138,6 +142,16 @@ var PidTunerView = {
     };
     // create dixie db 
     this.db = new Dexie("pidtuner");
+    this.db.version(2).stores({
+	  projdata: `proj_id,all_steps,current_step,latest_step,show_message,next_enabled,step_loaded,time,input,output,cached_range_list,selected_range,uniform_time,uniform_input,uniform_output,cached_model_list,selected_model,cached_gains_slider,cached_time_slider,cached_r_size,cached_d_size,pid_gains,pidsim_time,pidsim_input,pidsim_output,pidsim_ref,pidsim_dist,margins,bode_w,bode_mag,bode_pha`
+	}).upgrade (tx => {
+		return tx.projdata.toCollection().modify (data => {
+			if (!data.margins ) { data.margins  = [] }
+			if (!data.bode_w  ) { data.bode_w   = [] }
+			if (!data.bode_mag) { data.bode_mag = [] }
+			if (!data.bode_pha) { data.bode_pha = [] }
+		});
+	});
 	this.db.version(1).stores({
 	  projdata: `proj_id,all_steps,current_step,latest_step,show_message,next_enabled,step_loaded,time,input,output,cached_range_list,selected_range,uniform_time,uniform_input,uniform_output,cached_model_list,selected_model,cached_gains_slider,cached_time_slider,cached_r_size,cached_d_size,pid_gains,pidsim_time,pidsim_input,pidsim_output,pidsim_ref,pidsim_dist`
 	});  
