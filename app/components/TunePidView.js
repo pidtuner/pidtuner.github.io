@@ -250,12 +250,27 @@ var TunePidView = {
 	  		y : this.bode_mag[i]
 	  	});
 	  }
+	  // create gain margin data
+	  var mag_margin_data = [];
+	  mag_margin_data.push({
+		x : this.findMargin('GmF').val,
+		y : - 20.0 * Math.log10(this.findMargin('Gm').val)
+	  });
+	  mag_margin_data.push({
+		x : this.findMargin('GmF').val,
+		y : 0,
+	  });
 	  // then datasets
 	  var mag_datasets = [
 	  	{
-		  label          : 'Magnitude',
+		  label          : 'Gain',
 		  data           : mag_data,
 		  borderColor    : '#2185D0',
+		},
+	  	{
+	  	  label          : 'G.M.',
+		  data           : mag_margin_data,
+		  borderColor    : 'rgba(234, 109, 52, 1)',
 		}
 	  ];
 	  // finally chart data
@@ -266,7 +281,7 @@ var TunePidView = {
       return mag_chart_data;
     }, // mag_bode_data
     pha_bode_data: function() {
-	  // first create data
+	  // first create bode data
 	  var pha_data      = [];
 	  // if not yet defined
 	  if(!this.bode_w) { return pha_data; }
@@ -277,12 +292,27 @@ var TunePidView = {
 	  		y : this.bode_pha[i]
 	  	});
 	  }
+	  // create phase margin data
+	  var pha_margin_data = [];
+	  pha_margin_data.push({
+		x : this.findMargin('PmF').val,
+		y : -180.0
+	  });
+	  pha_margin_data.push({
+		x : this.findMargin('PmF').val,
+		y : -180.0 + this.findMargin('Pm').val,
+	  });
 	  // then datasets
 	  var pha_datasets = [
 	  	{
 		  label          : 'Phase',
 		  data           : pha_data,
 		  borderColor    : '#2185D0',
+		},
+	  	{
+	  	  label          : 'P.M.',
+		  data           : pha_margin_data,
+		  borderColor    : 'rgba(234, 109, 52, 1)',
 		}
 	  ];
 	  // finally chart data
@@ -624,6 +654,15 @@ var TunePidView = {
 	updateDistSize() {
 		this.$emit('update_cached_d_size', parseFloat( this.$refs.d_size.value ));
 	},
+	isMarginOk(margin) {
+		if (margin.name.includes('Gm')) {
+			// 20.0 * Math.log10(this.findMargin('Gm').val) ?
+			return this.findMargin('Gm').val >= 3.0;
+		}
+		else if (margin.name.includes('Pm')) {
+			return this.findMargin('Pm').val >= 30;
+		}
+	}
   }, // methods
   watch: {
 	gains_scale: function(){

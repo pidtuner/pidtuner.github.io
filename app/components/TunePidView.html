@@ -107,7 +107,11 @@
 			</h4>
 		</div>
 
-		<div v-show="tab_active == 'bode_plot'"  class="row ui fluid labeled input tune-pid-gain" v-for="margin in margins">
+		<div v-show="tab_active == 'bode_plot'" v-for="margin in margins" :class="{
+		                                                 	'row ui fluid labeled input tune-pid-gain' : true,
+		                                                 	'error'   : !isMarginOk(margin),
+		                                                 	'success' :  isMarginOk(margin),
+		                                                 }">
 		  <div class="ui label tune-pid-label step-selected-showifbig">
 			{{ margin.descrip }}
 		  </div>

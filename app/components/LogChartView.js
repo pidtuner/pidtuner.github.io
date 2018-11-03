@@ -33,6 +33,9 @@ getLogChartViewComponent = async function() {
 								  }
 								}]
                             }, // scales
+                            //legend: {
+							//	display: false
+							//},
 						},		
 					}
 				},
