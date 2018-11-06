@@ -252,14 +252,16 @@ var TunePidView = {
 	  }
 	  // create gain margin data
 	  var mag_margin_data = [];
-	  mag_margin_data.push({
-		x : this.findMargin('GmF').val,
-		y : - 20.0 * Math.log10(this.findMargin('Gm').val)
-	  });
-	  mag_margin_data.push({
-		x : this.findMargin('GmF').val,
-		y : 0,
-	  });
+	  if(this.margins.length > 0) {
+		  mag_margin_data.push({
+			x : this.findMargin('GmF').val,
+			y : - 20.0 * Math.log10(this.findMargin('Gm').val)
+		  });
+		  mag_margin_data.push({
+			x : this.findMargin('GmF').val,
+			y : 0,
+		  });
+	  }
 	  // then datasets
 	  var mag_datasets = [
 	  	{
@@ -294,14 +296,16 @@ var TunePidView = {
 	  }
 	  // create phase margin data
 	  var pha_margin_data = [];
-	  pha_margin_data.push({
-		x : this.findMargin('PmF').val,
-		y : -180.0
-	  });
-	  pha_margin_data.push({
-		x : this.findMargin('PmF').val,
-		y : -180.0 + this.findMargin('Pm').val,
-	  });
+	  if(this.margins.length > 0) {
+		  pha_margin_data.push({
+			x : this.findMargin('PmF').val,
+			y : -180.0
+		  });
+		  pha_margin_data.push({
+			x : this.findMargin('PmF').val,
+			y : -180.0 + this.findMargin('Pm').val,
+		  });
+	  }
 	  // then datasets
 	  var pha_datasets = [
 	  	{
