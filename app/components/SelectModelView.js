@@ -427,6 +427,16 @@ var SelectModelView = {
       return model_list;
     }, // model_list
   }, // methods
+  watch: {
+	selected_model: function(){
+		this.selected_type   = this.selected_model.type  ;
+		this.selected_params = this.selected_model.params;
+		this.selected_V      = this.selected_model.V     ;
+		this.selected_y      = this.selected_model.y     ;
+		// as soon as any range is selected, we can continue
+		this.$emit('enableNext');
+	},
+  }, // watch
 };
 
 // ------------------------------------------------------------------------

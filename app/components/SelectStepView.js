@@ -252,28 +252,11 @@ var SelectStepView = {
 		this.selected_range.splice(0, 2);
 		this.selected_range.push(range[0]);
 		this.selected_range.push(range[1]);
-		// transform to downsampled
-		this.left_row_start = range[0] % this.step_data;
-		this.left_row_end   = range[1] % this.step_data;
-		var row_start = Math.floor(range[0] / this.step_data);
-		var row_end   = Math.floor(range[1] / this.step_data);
-		// roundup
-    	if(Math.abs(range[0] - this.uniform_time.length) < this.step_data) {
-			row_start = this.length_data-1;
-    	}
-	  	if(Math.abs(range[1] - this.uniform_time.length) < this.step_data) {
-			row_end = this.length_data-1;
-    	}
-    	// TODO : round down?
-		// set as selected range for chart
-		this.ranges.splice(0, 1, [0, row_start, row_end]);
-		// as soon as any range is selected, we can continue
-		this.$emit('enableNext');
 	},	
 	isRangeEq(range, selected_range) {
 		return range.isEqual(selected_range);
 	}
-  },
+  }, // methods
   watch: {
 	ranges: function(){
 		if (!this.rangedChangedThrottle) {
@@ -304,7 +287,26 @@ var SelectStepView = {
 		// call throttle func
 		this.rangedChangedThrottle();
 	},
-  },
+	selected_range: function(){
+		// transform to downsampled
+		this.left_row_start = this.selected_range[0] % this.step_data;
+		this.left_row_end   = this.selected_range[1] % this.step_data;
+		var row_start = Math.floor(this.selected_range[0] / this.step_data);
+		var row_end   = Math.floor(this.selected_range[1] / this.step_data);
+		// roundup
+    	if(Math.abs(this.selected_range[0] - this.uniform_time.length) < this.step_data) {
+			row_start = this.length_data-1;
+    	}
+	  	if(Math.abs(this.selected_range[1] - this.uniform_time.length) < this.step_data) {
+			row_end = this.length_data-1;
+    	}
+    	// TODO : round down?
+		// set as selected range for chart
+		this.ranges.splice(0, 1, [0, row_start, row_end]);
+		// as soon as any range is selected, we can continue
+		this.$emit('enableNext');
+	},
+  }, // watch
 };
 
 // ------------------------------------------------------------------------

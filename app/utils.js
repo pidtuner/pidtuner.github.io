@@ -24,6 +24,7 @@ $.asyncGet = async function(url, success, error) {
         }/*, 'json'*/);
     });
 }
+Array.prototype.isArray = true;
 // clone array
 Array.prototype.clone = function() {
 	return this.slice(0);
@@ -91,13 +92,17 @@ if(!Object.isObjEqual) {
         return false;
       }
       t = typeof a[p];
-      if (t === 'object' && !isEqual(a[p], b[p])) {
+      if (t === 'object' && !Object.isObjEqual(a[p], b[p])) {
         return false;
       }
       if (t === 'function' && (typeof b[p] === 'undefined' || a[p].toString() !== b[p].toString())) {
         return false;
       }
-      if (a[p] !== b[p]) {
+      if ( (t === 'Array' || a[p].isArray) && !a[p].isEqual(b[p])) {
+        return false;
+      }
+      if (t !== 'object' && t !== 'function' && t !== 'Array' && !a[p].isArray &&
+          a[p] !== b[p]) {
         return false;
       }
     }
