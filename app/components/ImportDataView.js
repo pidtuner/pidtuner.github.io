@@ -99,9 +99,7 @@ var ImportDataView = {
   	this.hot_data = [];
   	if(this.time.length > 0) {  
 		// NOTE : need to clone data or it wont work in vue
-		for(var i = 0; i < this.time.length; i++) {
-			this.hot_data.push([this.time[i], this.input[i], this.output[i]]);
-		}
+		this.updateHotData();
   	}
   	else {
   		// use test data
@@ -279,7 +277,7 @@ var ImportDataView = {
     	// [ALT]
     	return this.output_chart_data.datasets[0].data.length;
     }
-  },
+  }, // computed
   methods: {
   	getLabels(data) {
 		var out_labels = [];
@@ -295,10 +293,6 @@ var ImportDataView = {
 		return value.toFixed(2);
 	},
     on_afterChange() {
-      // clear old vectors
-      this.time  .splice(0, this.time  .length);
-	  this.input .splice(0, this.input .length);
-	  this.output.splice(0, this.output.length);
       // update manually (computed props did not work)
       var tmp_time   = this.getColData(this.hot_data, 0);
       var tmp_input  = this.getColData(this.hot_data, 1);
@@ -349,7 +343,7 @@ var ImportDataView = {
 	  	return;
 	  }
 	  // validate time order
-	  for(i = 1; i < this.time.length; i++) {
+	  for(i = 1; i < tmp_time.length; i++) {
 	  	if(tmp_time[i] <= tmp_time[i-1]) {
 	  		// error message
 	  		this.show_error    = true;  
@@ -361,9 +355,9 @@ var ImportDataView = {
 	  	}
 	  }
 	  // set nnew vectors for charts
-	  this.time  .copyFrom(tmp_time  );
-	  this.input .copyFrom(tmp_input );
-	  this.output.copyFrom(tmp_output);
+	  if(!this.time  .isEqual(tmp_time  )) { this.time  .copyFrom(tmp_time  ); }
+	  if(!this.input .isEqual(tmp_input )) { this.input .copyFrom(tmp_input ); }
+	  if(!this.output.isEqual(tmp_output)) { this.output.copyFrom(tmp_output); }
 	  // success
 	  this.ranges_enabled = true;
 	  this.show_error     = true;  
@@ -461,6 +455,9 @@ var ImportDataView = {
 		this.$emit('latestStep');
     },
     clearTableClicked() {
+    	this.time  .splice(0, this.time  .length);
+    	this.input .splice(0, this.input .length);
+    	this.output.splice(0, this.output.length);
     	this.hot_data = [['','','']]; 
     	this.on_afterChange();
     	this.$emit('latestStep');
@@ -471,7 +468,24 @@ var ImportDataView = {
 		// init time, input, output
 		this.on_afterChange();
     },
-  },
+    updateHotData() {
+    	this.hot_data.splice(0, this.hot_data.length);
+    	for(var i = 0; i < this.time.length; i++) {
+			this.hot_data.push([this.time[i], this.input[i], this.output[i]]);
+		}
+    },
+    throttle_updateHotData() {
+    	// create throttle func if not exists
+  		if(!this.throttle_updateHotDataInternal) {
+			this.throttle_updateHotDataInternal = throttle(() => {
+				this.updateHotData();
+				this.on_afterChange();
+			}, 200, { leading : false });
+  		}
+  		// call 
+  		this.throttle_updateHotDataInternal();
+    },
+  }, // methods
   watch: {
 	ranges: function(){
 		if (!this.rangedChangedThrottle) {
@@ -513,7 +527,22 @@ var ImportDataView = {
 		// call throttle func
 		this.rangedChangedThrottle();
 	},
-  },
+	time: function(){
+	  var tmp_time = this.getColData(this.hot_data, 0);
+	  if(this.time.isEqual(tmp_time  )) { return; }
+      this.throttle_updateHotData();
+    },
+    input: function(){
+      var tmp_input  = this.getColData(this.hot_data, 1);
+      if(this.input.isEqual(tmp_input )) { return; }
+      this.throttle_updateHotData();
+    },
+    output: function(){
+      var tmp_output = this.getColData(this.hot_data, 2);
+      if(this.output.isEqual(tmp_output)) { return; }
+      this.throttle_updateHotData();
+    },
+  }, // watch
   components: {
     'v-hot-table' : HotTable,
   }

@@ -73,7 +73,7 @@ var PidTunerView = {
   beforeMount: function() {
   	// [UNDO] global event listeners
   	// TODO : child components not ready for UNDO
-  	/*
+
 	window.addEventListener('keyup', (e) => {
 		var evtobj = window.event? event : e
       	if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
@@ -83,7 +83,7 @@ var PidTunerView = {
       		this.redo();
       	}
 	});
-	*/
+
     // create steps info
     this.stepInfo = {};
     this.stepInfo['import_data' ] = {
@@ -235,7 +235,9 @@ var PidTunerView = {
 						}
 						// [UNDO] push old value to undo stack before updating
 						// TODO : child components not ready for UNDO
-						// this.addUndo(dbKey, dbObj[dbKey]);
+
+						this.addUndo(dbKey, dbObj[dbKey]);
+						
 						// update IndexedDb value
 						dbObj[dbKey] = dbVal;				
 					}
