@@ -333,6 +333,9 @@ var PidTunerView = {
   		}
   		// add undo value to cache 
   		this.undo_stack_cache[key] = valOld;
+		// NOTE : save sliders cache until simulation updated because there are delays involved
+		if(key == 'cached_gains_slider') { return; }
+		if(key == 'cached_time_slider' ) { return; }
   		// create throttle func if not exists
   		if(!this.throttle_addUndo) {
 			this.throttle_addUndo = throttle(() => {

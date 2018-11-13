@@ -696,6 +696,15 @@ var TunePidView = {
 	cached_d_size: function(){
 		this.makeSimulation();
 	},
+	cached_gains_slider: function(){
+		$(this.$refs.slider_gains).range('set value', this.cached_gains_slider);
+	},
+	cached_time_slider: function(){
+		$(this.$refs.slider_time).range('set value', this.cached_time_slider);
+	},
+	pid_gains: function(){
+		// TODO : update UI
+	},
   }
 };
 
