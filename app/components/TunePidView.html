@@ -18,10 +18,10 @@
 			{{ gain.name }}
 		  </div>
 		  <input type        ="number" 
-		         v-model     ="gain.val" 
+		         :value      ="gain.val" 
 		         :readonly   ="!gain.editable" 
 		         :class      ="{ 'tune-pid-readonly' : !gain.editable }"
-		         @keyup.enter="updateGain(gain.name)"
+		         @keyup.enter="updateGain(gain.name, $event.target.value)"
 		  >
 		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
 			{{ gain.units }}

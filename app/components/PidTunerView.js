@@ -343,6 +343,8 @@ var PidTunerView = {
 				this.undo_stack.push(this.undo_stack_cache);	
 				// clear cache
 				this.undo_stack_cache = {};
+				// clear redo 
+				this.redo_stack.splice(0, this.redo_stack.length);				
 			}, 200, { leading : false });
   		}
   		// call 
@@ -359,20 +361,48 @@ var PidTunerView = {
     	var undoKeys = Object.keys(undoObj);	
 		// set first in IndexedDb to avoid loop
 		this.getDbObj().modify((db_obj) => {
+			var redoObj = {};
 			for(var i = 0; i < undoKeys.length; i++) {
-				const undoKey = undoKeys[i];
+				const undoKey = undoKeys[i];			
 				// update IndexedDb
 				db_obj[undoKey] = undoObj[undoKey];
+				// copy to redo before overwrite
+				redoObj[undoKey] = this[undoKey];
 				// update Vue data later
 				this.$nextTick(() => {
 					this[undoKey] = undoObj[undoKey];
 				});
 			}
+			// add to redo stack
+			this.redo_stack.push(redoObj);
 		});
     },
     redo() {
     	// [UNDO] 
-    	console.log('redo');    	
+    	// nothing to do here
+    	if(this.redo_stack.length <= 0) {
+    		return;
+    	}
+    	// loop keys to redo 
+    	var redoObj  = this.redo_stack.pop();
+    	var redoKeys = Object.keys(redoObj);	
+		// set first in IndexedDb to avoid loop
+		this.getDbObj().modify((db_obj) => {
+			var undoObj = {};
+			for(var i = 0; i < redoKeys.length; i++) {
+				const redoKey = redoKeys[i];			
+				// update IndexedDb
+				db_obj[redoKey] = redoObj[redoKey];
+				// copy to undo before overwrite
+				undoObj[redoKey] = this[redoKey];
+				// update Vue data later
+				this.$nextTick(() => {
+					this[redoKey] = redoObj[redoKey];
+				});
+			}
+			// add to undo stack
+			this.undo_stack.push(undoObj);
+		});   	
     }
   }, //methods
   computed: {
@@ -385,6 +415,17 @@ var PidTunerView = {
 		},
 		set: function(val) {
 			this.internal_undo = val;		
+		}    
+	},
+	redo_stack: {
+		get: function() { 
+			if(!this.internal_redo) {
+				this.internal_redo = [];
+			}
+			return this.internal_redo;
+		},
+		set: function(val) {
+			this.internal_redo = val;		
 		}    
 	}
   },

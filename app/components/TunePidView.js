@@ -632,9 +632,12 @@ var TunePidView = {
 		this.arma_gains.set_at(4, 0, new Arma.cx_double(D     , 0.0));
 		this.arma_gains.set_at(5, 0, new Arma.cx_double(du_lim, 0.0));
 	},
-	updateGain(name) {
-		if(typeof this.findGain(name).val == "string") {
-			Vue.set(this.findGain(name), 'val', parseFloat(this.findGain(name).val));
+	updateGain(name, value) {
+		if(typeof value == "string") {
+			Vue.set(this.findGain(name), 'val', parseFloat(value));
+		}
+		else if(typeof value == "number") {
+			Vue.set(this.findGain(name), 'val', value);
 		}
 		// check if needed to update other gains
 		if(name == 'Kp' || name == 'Ti' || name == 'Td') {
@@ -703,7 +706,8 @@ var TunePidView = {
 		$(this.$refs.slider_time).range('set value', this.cached_time_slider);
 	},
 	pid_gains: function(){
-		// TODO : update UI
+		// NOPE !
+		// this.$forceUpdate();
 	},
   }
 };
