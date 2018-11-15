@@ -70,7 +70,7 @@ window.mainVue = new Vue({
         if(!this.pid_loaded) {
           location.reload();
         }
-      }, 5000);
+      }, 60000);
       // wait for module load
       //console.time('PidTuner.await()');
       await PidTuner.await();
