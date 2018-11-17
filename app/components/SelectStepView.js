@@ -58,8 +58,12 @@ var SelectStepView = {
     return {
       ranges           : [],   // show only one range at a time in charts
       using_list_range : true, // whether a range form the list is being used
-      max_chart_len    : 300
+      max_chart_len    : 300,
+      range_list       : []
     }
+  },
+  mounted: function() {
+	this.range_list = this.computeRangeList();
   },
   computed: {
   	input_chart_data: function() {
@@ -130,7 +134,44 @@ var SelectStepView = {
       };
       return out_chart_data;
     }, // output_chart_data
-    range_list: function() {
+	step_data : function() {
+    	// [ALT]
+    	return Math.ceil(this.time.length/this.max_chart_len);
+    },
+    length_data : function() {
+    	// [ALT]
+    	return this.output_chart_data.datasets[0].data.length;
+    }
+  }, // computed
+  methods: {
+    getLabels(data) {
+		var out_labels = [];
+		for(var i = 0; i < data.length; i++) {
+			out_labels.push(this.getLabel(data[i].x));
+		}
+		return out_labels;
+	},
+	getLabel(value) {
+		if(typeof value != "number") {
+			return '';
+		}
+		return value.toFixed(2);
+	},
+	setRange(range) {
+		// [ALT] : range arg is normal
+		//         this.selected_range is also normal
+		//         this.ranges is downsampled
+		// set selected range for list and display
+		this.using_list_range = true;
+		// do it the vue way
+		this.selected_range.splice(0, 2);
+		this.selected_range.push(range[0]);
+		this.selected_range.push(range[1]);
+	},	
+	isRangeEq(range, selected_range) {
+		return range.isEqual(selected_range);
+	},
+	computeRangeList() {
 		// update or cache
 		var steps_arr = [];
 		if(this.cached_range_list.length <= 0) {
@@ -218,43 +259,6 @@ var SelectStepView = {
         });
 		// return
 		return steps_arr;
-	}, // range_list
-	step_data : function() {
-    	// [ALT]
-    	return Math.ceil(this.time.length/this.max_chart_len);
-    },
-    length_data : function() {
-    	// [ALT]
-    	return this.output_chart_data.datasets[0].data.length;
-    }
-  }, // computed
-  methods: {
-    getLabels(data) {
-		var out_labels = [];
-		for(var i = 0; i < data.length; i++) {
-			out_labels.push(this.getLabel(data[i].x));
-		}
-		return out_labels;
-	},
-	getLabel(value) {
-		if(typeof value != "number") {
-			return '';
-		}
-		return value.toFixed(2);
-	},
-	setRange(range) {
-		// [ALT] : range arg is normal
-		//         this.selected_range is also normal
-		//         this.ranges is downsampled
-		// set selected range for list and display
-		this.using_list_range = true;
-		// do it the vue way
-		this.selected_range.splice(0, 2);
-		this.selected_range.push(range[0]);
-		this.selected_range.push(range[1]);
-	},	
-	isRangeEq(range, selected_range) {
-		return range.isEqual(selected_range);
 	}
   }, // methods
   watch: {

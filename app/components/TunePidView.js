@@ -128,25 +128,19 @@ var TunePidView = {
     	$(this.$refs.slider_gains).range('set value', this.cached_gains_slider);
     	$(this.$refs.slider_time ).range('set value', this.cached_time_slider );
 	}, 200);
-    $(window).on('resize', this.resizeHandler);
-    // check if necessary to compute stuff for first time
-    if(this.pid_gains.length <= 0) {
-		// perform initial tuning
+    $(window).on('resize', this.resizeHandler);  
+	// perform initial tuning
+	if(this.pid_gains.length <= 0) {
 		this.tunePID();
-    }
-    else {
-    	// create arma_gains from pid_gains
-    	this.createArmaGains();
-    }
-    if(this.pidsim_time.length <= 0) {
-		// perform initial simulation
+	}
+	// perform initial simulation
+    if(this.pidsim_time.length <= 0) {	
 		this.makeSimulation();
     }
 	// emit step loaded
     this.$emit('stepLoaded');
   },
   destroyed: function() {
-  	this.arma_gains.destroy();
 	$(window).off('resize', this.resizeHandler);
   },
   computed: {
@@ -379,16 +373,15 @@ var TunePidView = {
 		var ts_real = this.uniform_time[1] - this.uniform_time[0];
 		var ts      = Arma.CxMat.zeros(1, 1);
 		ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
+		// check if necessary to compute stuff for first time
+		var arma_gains = Arma.CxMat.zeros(6, 1);
 		// PID tuning
-		if(!this.arma_gains) {
-			this.createArmaGains();
-		}
 		var k_tune = Arma.CxMat.zeros(1, 1);
 		k_tune.set_at(0, 0, new Arma.cx_double(this.gains_scale, 0));
 		pid.tune_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params),
-					 ts, k_tune, true, this.arma_gains);	
+					 ts, k_tune, true, arma_gains);	
 		// get gains
-		var gains_r = this.arma_gains.real().to_array().map(arr => arr[0]);
+		var gains_r = arma_gains.real().to_array().map(arr => arr[0]);
 		var Kp      = gains_r[0];
 		var Ti      = gains_r[1];
 		var Td      = gains_r[2];
@@ -450,12 +443,27 @@ var TunePidView = {
 		Vue.set(this.findGain('du_lim'), 'val', du_lim);	
 	},
 	makeSimulation() {
+		var arma_gains = Arma.CxMat.zeros(6, 1);
+		var Kp      = this.findGain('Kp'    ).val;
+		var Ti      = this.findGain('Ti'    ).val;
+		var Td      = this.findGain('Td'    ).val;
+		var I       = this.findGain('I'     ).val;
+		var D       = this.findGain('D'     ).val;
+		var du_lim  = this.findGain('du_lim').val;
+		// set values
+		arma_gains.set_at(0, 0, new Arma.cx_double(Kp    , 0.0));
+		arma_gains.set_at(1, 0, new Arma.cx_double(Ti    , 0.0));
+		arma_gains.set_at(2, 0, new Arma.cx_double(Td    , 0.0));
+		arma_gains.set_at(3, 0, new Arma.cx_double(I     , 0.0));
+		arma_gains.set_at(4, 0, new Arma.cx_double(D     , 0.0));
+		arma_gains.set_at(5, 0, new Arma.cx_double(du_lim, 0.0));
+
 		// get ts
 		var ts_real = this.uniform_time[1] - this.uniform_time[0];
 		var ts      = Arma.CxMat.zeros(1, 1);
 		ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
 		// get gains
-		var gains_r = this.arma_gains.real().to_array().map(arr => arr[0]);
+		var gains_r = arma_gains.real().to_array().map(arr => arr[0]);
 		var Kp      = gains_r[0];
 		var Ti      = gains_r[1];
 		var Td      = gains_r[2];
@@ -521,7 +529,7 @@ var TunePidView = {
 		// make time simulation
 		var u_sim = new Arma.cx_mat();
 		var y_sim = new Arma.cx_mat();
-		pid.sim_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params), this.arma_gains, limits, sim_ts, sim_length, r_sim, d_sim, u_sim, y_sim);
+		pid.sim_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params), arma_gains, limits, sim_ts, sim_length, r_sim, d_sim, u_sim, y_sim);
 
 		var u_sim_r = u_sim.real().to_array().map(arr => arr[0]);
 		var y_sim_r = y_sim.real().to_array().map(arr => arr[0]);
@@ -537,7 +545,7 @@ var TunePidView = {
 		var model = new Arma.pid_model();
 		model.set_type  (this.selected_model.type);
 		model.set_params(cxmatFromRealArray(this.selected_model.params));
-		model.set_gains (this.arma_gains);
+		model.set_gains (arma_gains);
 		var samples = Arma.CxMat.zeros(1, 1);
     	samples.set_at(0, 0, new Arma.cx_double(100, 0.0));
     	var w   = new Arma.cx_mat();
@@ -608,30 +616,6 @@ var TunePidView = {
 	findMargin(name) {
 		return this.margins.find((margin) => { return margin.name == name });
 	},
-	createArmaGains() {
-		if(!this.arma_gains) {
-			this.arma_gains = Arma.CxMat.zeros(6, 1);
-			this.arma_gains.persist();
-		}
-		if(this.pid_gains.length > 0) {
-			this.loadArmaGains();
-		}
-	},
-	loadArmaGains() {
-		var Kp      = this.findGain('Kp'    ).val;
-		var Ti      = this.findGain('Ti'    ).val;
-		var Td      = this.findGain('Td'    ).val;
-		var I       = this.findGain('I'     ).val;
-		var D       = this.findGain('D'     ).val;
-		var du_lim  = this.findGain('du_lim').val;
-		// set values
-		this.arma_gains.set_at(0, 0, new Arma.cx_double(Kp    , 0.0));
-		this.arma_gains.set_at(1, 0, new Arma.cx_double(Ti    , 0.0));
-		this.arma_gains.set_at(2, 0, new Arma.cx_double(Td    , 0.0));
-		this.arma_gains.set_at(3, 0, new Arma.cx_double(I     , 0.0));
-		this.arma_gains.set_at(4, 0, new Arma.cx_double(D     , 0.0));
-		this.arma_gains.set_at(5, 0, new Arma.cx_double(du_lim, 0.0));
-	},
 	updateGain(name, value) {
 		if(typeof value == "string") {
 			Vue.set(this.findGain(name), 'val', parseFloat(value));
@@ -652,7 +636,6 @@ var TunePidView = {
 		// disable gains slider 
 		this.slider_gains_enabled = false;
 		// update simulation
-		this.loadArmaGains();
 		this.makeSimulation();		
 	},
 	updateRefSize() {
