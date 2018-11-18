@@ -56,10 +56,7 @@ var SelectModelView = {
 		selected_y       : []
     }
   },
-  created: function() {
-                  
-  },
-  mounted: function() {
+  mounted: async function() {
   	// if cache exists, enable next step
   	if(this.cached_model_list.length > 0) {
 		// emit step loaded
@@ -71,7 +68,7 @@ var SelectModelView = {
 	this.selected_V      = this.selected_model.V     ;
 	this.selected_y      = this.selected_model.y     ;
     // load or create model_list
-  	this.model_list.copyFrom(this.getModelList());  	
+  	this.model_list.copyFrom(await this.getModelList());  	
   },
   computed: {
     input_chart_data: function() {
@@ -123,10 +120,12 @@ var SelectModelView = {
 	  		x : this.uniform_time [idx],
 	  		y : this.uniform_output[idx]
 	  	});
-	  	out_data_selected.push({
-	  		x : this.uniform_time [idx],
-	  		y : this.selected_y[idx]
-	  	});
+	  	if(this.selected_y && this.selected_y.length > 0) {
+			out_data_selected.push({
+				x : this.uniform_time [idx],
+				y : this.selected_y[idx]
+			});
+	  	}
 	  	if(idx == this.uniform_time.length-1) {
 	  		break;
 	  	}
@@ -143,8 +142,7 @@ var SelectModelView = {
 		  label          : 'Output (Data)',
 		  data           : out_data,
 		  borderColor    : '#2185D0',
-		},
-		
+		},	
 	  ];
 	  // finally chart data
 	  var out_chart_data = {
@@ -306,109 +304,19 @@ var SelectModelView = {
 	  });
       return eq;
 	},
-	getModelParams(type) {
-
-	},
-	getModelList: function() {
+	getModelList: async function() {
       // update or cache
 	  var model_list = [];
 	  if(this.cached_model_list.length <= 0) {
-		// copy
-		var arma_time   = [];
-		var arma_input  = [];
-		var arma_output = [];
-		for(var i = 0; i < this.uniform_time.length; i++) {
-	      arma_time  .push([[this.uniform_time  [i], 0]]);
-	      arma_input .push([[this.uniform_input [i], 0]]);
-	      arma_output.push([[this.uniform_output[i], 0]]);
-		}
-		// instantiate arma matrices
-		var t_uniform = Arma.CxMat.from_array(arma_time  );
-		var u_uniform = Arma.CxMat.from_array(arma_input );
-		var y_uniform = Arma.CxMat.from_array(arma_output);
-		// get selected range
-		var step_ini = this.selected_range[0];
-		var step_end = this.selected_range[1];
-		// get submat for selected range
-		var t_step = t_uniform.submat(step_ini, 0, step_end, 0);
-		var u_step = u_uniform.submat(step_ini, 0, step_end, 0);
-		var y_step = y_uniform.submat(step_ini, 0, step_end, 0);
-		// resample data to reduce problem size, if  necessary
-		var max_size = 470;
-		var t_step_ini = t_step.clone();
-		t_step_ini.fill( t_step.submat(0, 0, 0, 0).as_scalar() );
-		var u_step_ini = u_step.clone();
-		u_step_ini.fill( u_step.submat(0, 0, 0, 0).as_scalar() );
-		var y_step_ini = y_step.clone();
-		y_step_ini.fill( y_step.submat(0, 0, 0, 0).as_scalar() );
-		var t_id  = t_step.rest(t_step_ini);
-		var u_id  = u_step.rest(u_step_ini);
-		var y_id  = y_step.rest(y_step_ini);
-		var ts_id_real = t_id.at(1, 0).rest(t_id.at(0, 0)).real();
-		if(t_id.get_n_rows() > max_size) {
-	      ts_id_real  = t_id.at(t_id.get_n_rows()-1, 0).real()/max_size;
-	      var t_new   = new Arma.cx_mat();
-	      var u_new   = new Arma.cx_mat();
-	      var y_new   = new Arma.cx_mat();
-	      ts_id_real  = pid.resample(t_id, u_id, y_id, ts_id_real, t_new, u_new, y_new);
-	      t_id = t_new;
-	      u_id = u_new;
-	      y_id = y_new;
-		}
-		var ts_id = Arma.CxMat.zeros(1, 1);
-		ts_id.set_at(0, 0, new Arma.cx_double(ts_id_real, 0.0));
-		// remove offsets
-		var u_id_ini = u_id.clone();
-		u_id_ini.fill( u_id.submat(0, 0, 0, 0).as_scalar() );
-		var y_id_ini = y_id.clone();
-		y_id_ini.fill( y_id.submat(0, 0, 0, 0).as_scalar() );
-		var u_id  = u_id.rest(u_id_ini);
-		var y_id  = y_id.rest(y_id_ini);
-		// add 5% of samples as zeros in the beginning
-		var x_size = Math.ceil(0.05*t_id.get_n_rows());
-		u_id = Arma.CxMat.zeros(x_size, 1).join_vert(u_id);
-		y_id = Arma.CxMat.zeros(x_size, 1).join_vert(y_id);
-		// identification
-		var arma_models = [];
-		for(var i = 0; i < 5; i++) {
-			arma_models.push(new Arma.pid_model());
-		}
-		pid.find_model(u_id, y_id, ts_id, arma_models[0], 
-		                                  arma_models[1], 
-		                                  arma_models[2], 
-		                                  arma_models[3], 
-		                                  arma_models[4]);
-		// create output array
-		var model_list = [];
-		var j = 0;
-		for(var i = 0; i < arma_models.length; i++) {
-	      // create output sim
-	      var type   = arma_models[i].get_type();
-	      var params = arma_models[i].get_params();
-	      var Voptim = arma_models[i].get_V().real().to_array()[0][0];
-	      // check if should be added
-	      if(i != 0 && !(arma_models[0].get_type() == '2ndord' && type == '1stord') && 
-	         model_list[j-1].V < (1e-1)*Voptim) {
-	      	continue;
-	      }
-	      // increase number of good models
-	      j++;
-	      // detrend
-	      var y_detrend = new Arma.cx_mat();
-	      params.resize(10, 1);
-	      pid.detrend_sim(type, params, t_uniform, u_uniform, y_uniform, y_detrend);
-	      // add to output array
-	      model_list.push({
-	        type  : type,
-	        params: params.real().to_array().map(arr => arr[0]),
-	        V     : Voptim,
-	        y     : y_detrend.real().to_array().map(arr => arr[0])
-	      });
-		}
-		// clean up 
-		while(arma_models.length > 0) {
-			arma_models.splice(0, 1)[0].destroy();
-		}
+	  	// update in worker
+		var result = await PidWorker.getModelList({
+			uniform_time   : this.uniform_time  ,
+			uniform_input  : this.uniform_input ,
+			uniform_output : this.uniform_output,
+			selected_range : this.selected_range
+		});
+		// copy results
+		model_list.copyFrom(result.model_list);
 		// update cache
 		this.cached_model_list.copyFrom(model_list);
 	  }

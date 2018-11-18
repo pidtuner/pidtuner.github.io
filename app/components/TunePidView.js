@@ -99,7 +99,7 @@ var TunePidView = {
       tab_active           : 'time_step',
     }
   },
-  mounted: function() {
+  mounted: async function() {
   	// setup sliders
 	$(this.$refs.slider_gains).range({
 		min   : -this.slider_res,
@@ -131,11 +131,11 @@ var TunePidView = {
     $(window).on('resize', this.resizeHandler);  
 	// perform initial tuning
 	if(this.pid_gains.length <= 0) {
-		this.tunePID();
+		await this.tunePID();
 	}
 	// perform initial simulation
     if(this.pidsim_time.length <= 0) {	
-		this.makeSimulation();
+		await this.makeSimulation();
     }
 	// emit step loaded
     this.$emit('stepLoaded');
@@ -368,26 +368,20 @@ var TunePidView = {
 		}
 		return value.toFixed(2);
 	},
-	tunePID() {
-		// get ts
-		var ts_real = this.uniform_time[1] - this.uniform_time[0];
-		var ts      = Arma.CxMat.zeros(1, 1);
-		ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
-		// check if necessary to compute stuff for first time
-		var arma_gains = Arma.CxMat.zeros(6, 1);
-		// PID tuning
-		var k_tune = Arma.CxMat.zeros(1, 1);
-		k_tune.set_at(0, 0, new Arma.cx_double(this.gains_scale, 0));
-		pid.tune_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params),
-					 ts, k_tune, true, arma_gains);	
-		// get gains
-		var gains_r = arma_gains.real().to_array().map(arr => arr[0]);
-		var Kp      = gains_r[0];
-		var Ti      = gains_r[1];
-		var Td      = gains_r[2];
-		var I       = gains_r[3];
-		var D       = gains_r[4];
-		var du_lim  = gains_r[5];
+	async tunePID() {
+		// tune in worker
+		var result = await PidWorker.tunePID({
+			uniform_time   : this.uniform_time,
+			gains_scale    : this.gains_scale,
+			selected_model : this.selected_model
+		});
+		// copy results
+		var Kp      = result.gains[0];
+		var Ti      = result.gains[1];
+		var Td      = result.gains[2];
+		var I       = result.gains[3];
+		var D       = result.gains[4];
+		var du_lim  = result.gains[5];
 		// create array if empty
 		if(this.pid_gains.length <= 0) {
 			this.pid_gains
@@ -442,168 +436,83 @@ var TunePidView = {
 		Vue.set(this.findGain('D') , 'val', D );	
 		Vue.set(this.findGain('du_lim'), 'val', du_lim);	
 	},
-	makeSimulation() {
-		var arma_gains = Arma.CxMat.zeros(6, 1);
+	async makeSimulation() {
+		// get gains
 		var Kp      = this.findGain('Kp'    ).val;
 		var Ti      = this.findGain('Ti'    ).val;
 		var Td      = this.findGain('Td'    ).val;
 		var I       = this.findGain('I'     ).val;
 		var D       = this.findGain('D'     ).val;
 		var du_lim  = this.findGain('du_lim').val;
-		// set values
-		arma_gains.set_at(0, 0, new Arma.cx_double(Kp    , 0.0));
-		arma_gains.set_at(1, 0, new Arma.cx_double(Ti    , 0.0));
-		arma_gains.set_at(2, 0, new Arma.cx_double(Td    , 0.0));
-		arma_gains.set_at(3, 0, new Arma.cx_double(I     , 0.0));
-		arma_gains.set_at(4, 0, new Arma.cx_double(D     , 0.0));
-		arma_gains.set_at(5, 0, new Arma.cx_double(du_lim, 0.0));
-
-		// get ts
-		var ts_real = this.uniform_time[1] - this.uniform_time[0];
-		var ts      = Arma.CxMat.zeros(1, 1);
-		ts.set_at(0, 0, new Arma.cx_double(ts_real, 0.0));
-		// get gains
-		var gains_r = arma_gains.real().to_array().map(arr => arr[0]);
-		var Kp      = gains_r[0];
-		var Ti      = gains_r[1];
-		var Td      = gains_r[2];
-		var I       = gains_r[3];
-		var D       = gains_r[4];
-		var du_lim  = gains_r[5];
-		// define PID limits
-		var limits = Arma.CxMat.zeros(4, 1);
-		limits.set_at(0, 0, new Arma.cx_double(-Infinity, 0.0));
-		limits.set_at(1, 0, new Arma.cx_double(+Infinity, 0.0));
-		limits.set_at(2, 0, new Arma.cx_double(-du_lim  , 0.0));
-		limits.set_at(3, 0, new Arma.cx_double(+du_lim  , 0.0));
-		// get simulation time
-		var theta = Arma.CxMat.zeros(1, 1);
-		pid.get_theta(this.selected_model.type , cxmatFromRealArray(this.selected_model.params), theta);
-		theta = theta.real().to_array()[0][0];
-		var ts_r         = ts.real().to_array()[0][0];
-		var stime        = 160.0*Math.max(theta, ts_r);
-		var sim_length_r = Math.ceil(this.time_scale * Math.ceil(stime/ts_r));
-		// NOTE : limit simulation resolution to N samples to avoid ui feeze
-		//        cannot be too small or oscillations appear in the simulation
-		var N        = 1000;
-		var sim_ts   = {};
-		var sim_ts_r = 0;
-		if(sim_length_r > N) {
-			var new_stime = ts_r * sim_length_r;
-			sim_ts_r = new_stime/N;
-			sim_ts = Arma.CxMat.zeros(1, 1);
-			sim_ts.set_at(0, 0, new Arma.cx_double(sim_ts_r, 0.0));
-			sim_length_r = N;
-		}
-		else {
-			sim_ts   = ts;
-			sim_ts_r = ts_r;
-		}
-		// arma vars for simulation
-		var sim_length   = Arma.CxMat.zeros(1, 1);
-		sim_length.set_at(0, 0, new Arma.cx_double(sim_length_r, 0.0));
-
-		// Create Reference
-		this.pidsim_ref.splice(0, this.pidsim_ref.length);
-		var r_sim = Arma.CxMat.zeros(sim_length_r, 1);
-		for(var i = 0; i < sim_length_r; i++) {
-			// ref value
-			var r_value = i > Math.ceil(this.r_time*sim_length_r) ? this.cached_r_size : 0.0;
-			// for chart
-			this.pidsim_ref.push(r_value);
-			// for simulation
-			 r_sim.set_at(i, 0, new Arma.cx_double(r_value, 0)); 
-		}
-		// Create Input Disturbance
-		this.pidsim_dist.splice(0, this.pidsim_dist.length);
-		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
-		for(var i = 0; i < sim_length_r; i++) {
-			// ref value
-			var d_value = i > Math.ceil(this.d_time*sim_length_r) ? this.cached_d_size : 0.0;
-			// for chart
-			this.pidsim_dist.push(d_value);
-			// for simulation
-			 d_sim.set_at(i, 0, new Arma.cx_double(d_value, 0)); 
-		}
-
-		// make time simulation
-		var u_sim = new Arma.cx_mat();
-		var y_sim = new Arma.cx_mat();
-		pid.sim_pid(this.selected_model.type , cxmatFromRealArray(this.selected_model.params), arma_gains, limits, sim_ts, sim_length, r_sim, d_sim, u_sim, y_sim);
-
-		var u_sim_r = u_sim.real().to_array().map(arr => arr[0]);
-		var y_sim_r = y_sim.real().to_array().map(arr => arr[0]);
-
-		this.pidsim_input .copyFrom(u_sim_r);
-		this.pidsim_output.copyFrom(y_sim_r);
+		// update in worker
+		var result = await PidWorker.makeSimulation({
+			Kp             : Kp    ,
+			Ti             : Ti    ,
+			Td             : Td    ,
+			I              : I     ,
+			D              : D     ,
+			du_lim         : du_lim,
+			uniform_time   : this.uniform_time,
+			selected_model : this.selected_model,
+			time_scale     : this.time_scale,
+			pidsim_ref     : this.pidsim_ref,
+			r_time         : this.r_time,
+			cached_r_size  : this.cached_r_size,
+			pidsim_dist    : this.pidsim_dist,
+			d_time         : this.d_time,
+			cached_d_size  : this.cached_d_size
+		});
+		// copy time simulation results
+		this.pidsim_input .copyFrom(result.u_sim_r);
+		this.pidsim_output.copyFrom(result.y_sim_r);
 		this.pidsim_time  .splice(0, this.pidsim_time  .length);
-		for(var i = 0; i < sim_length_r; i++) {
-			this.pidsim_time.push(i * sim_ts_r);
+		for(var i = 0; i < result.sim_length_r; i++) {
+			this.pidsim_time.push(i * result.sim_ts_r);
 		}
-
-		// make bode plot
-		var model = new Arma.pid_model();
-		model.set_type  (this.selected_model.type);
-		model.set_params(cxmatFromRealArray(this.selected_model.params));
-		model.set_gains (arma_gains);
-		var samples = Arma.CxMat.zeros(1, 1);
-    	samples.set_at(0, 0, new Arma.cx_double(100, 0.0));
-    	var w   = new Arma.cx_mat();
-		var mag = new Arma.cx_mat();
-		var pha = new Arma.cx_mat();
-		model.get_bode(samples, w, mag, pha);
-		var w_r   = w  .real().to_array().map(arr => arr[0]);
-		var mag_r = mag.real().to_array().map(arr => arr[0]);
-		var pha_r = pha.real().to_array().map(arr => arr[0]);
-		this.bode_w  .copyFrom(w_r  );
-		this.bode_mag.copyFrom(mag_r);
-		this.bode_pha.copyFrom(pha_r);
-
-		// compute margins
-		var Gm  = new Arma.cx_mat();
-		var Pm  = new Arma.cx_mat();
-		var Wcg = new Arma.cx_mat();
-		var Wcp = new Arma.cx_mat();
-		model.get_margins(Gm, Pm, Wcg, Wcp);
+		// copy bode results
+		this.bode_w  .copyFrom(result.w_r  );
+		this.bode_mag.copyFrom(result.mag_r);
+		this.bode_pha.copyFrom(result.pha_r);
+		// copy margins results
 		this.margins
 			.copyFrom([{
 					    name    : 'Gm',
-					    val     : Gm .real().to_array()[0][0] ,
+					    val     : result.Gm_r  ,
 					    units   : '[dB]',
 					    descrip : 'Gain Margin',
 					    editable: false
 					   },
 					   {
 					    name    : 'GmF',
-					    val     : Wcg.real().to_array()[0][0] ,
+					    val     : result.Wcg_r,
 					    units   : '[rad/s]',
 					    descrip : 'G.M. Frequency',
 					    editable: false
 					   },
 					   {
 					    name    : 'Pm',
-					    val     : Pm .real().to_array()[0][0],
+					    val     : result.Pm_r,
 					    units   : '[deg]',
 					    descrip : 'Phase Margin',
 					    editable: false
 					   },				   
 					   {
 					    name    : 'PmF',
-					    val     : Wcp.real().to_array()[0][0] ,
+					    val     : result.Wcp_r,
 					    units   : '[rad/s]',
 					    descrip : 'P.M. Frequency',
 					    editable: false
 					   }]);
 
 	},
-	setOriginalGains() {
+	async setOriginalGains() {
 		// enable gains slider 
 		this.slider_gains_enabled = true;
 		// reset slider
 		if(this.cached_gains_slider == 0) {
 			// have to force manually here
-			this.tunePID();
-			this.makeSimulation();
+			await this.tunePID();
+			await this.makeSimulation();
 		}
 		else {
 			this.$emit('updateGainsSlider', 0);
@@ -616,7 +525,7 @@ var TunePidView = {
 	findMargin(name) {
 		return this.margins.find((margin) => { return margin.name == name });
 	},
-	updateGain(name, value) {
+	async updateGain(name, value) {
 		if(typeof value == "string") {
 			Vue.set(this.findGain(name), 'val', parseFloat(value));
 		}
@@ -636,7 +545,7 @@ var TunePidView = {
 		// disable gains slider 
 		this.slider_gains_enabled = false;
 		// update simulation
-		this.makeSimulation();		
+		await this.makeSimulation();		
 	},
 	updateRefSize() {
 		this.$emit('update_cached_r_size', parseFloat( this.$refs.r_size.value ));
@@ -658,9 +567,9 @@ var TunePidView = {
 	gains_scale: function(){
 		// create throttle func if not exists
 		if(!this.throttle_gains_scale) {
-			this.throttle_gains_scale = throttle(() => {
-				this.tunePID();
-				this.makeSimulation();				
+			this.throttle_gains_scale = throttle(async () => {
+				await this.tunePID();
+				await this.makeSimulation();				
 			}, 500, { leading : false });
 		}
 		// call throttle func
@@ -669,18 +578,18 @@ var TunePidView = {
 	time_scale: function(){
 		// create throttle func if not exists
 		if(!this.throttle_time_scale) {
-			this.throttle_time_scale = throttle(() => {
-				this.makeSimulation();			
+			this.throttle_time_scale = throttle(async () => {
+				await this.makeSimulation();			
 			}, 500, { leading : false });
 		}
 		// call throttle func
 		this.throttle_time_scale();
 	},
-	cached_r_size: function(){
-		this.makeSimulation();
+	cached_r_size: async function(){
+		await this.makeSimulation();
 	},
-	cached_d_size: function(){
-		this.makeSimulation();
+	cached_d_size: async function(){
+		await this.makeSimulation();
 	},
 	cached_gains_slider: function(){
 		$(this.$refs.slider_gains).range('set value', this.cached_gains_slider);

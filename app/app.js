@@ -1,6 +1,8 @@
 (async function () { // IFFE
 // ------------------------------------------------------------------------
 
+window.PidWorker = Comlink.proxy(new Worker('./pid/v1.0.4/pid_worker.js'));
+
 // init Vue
 var HomeView     = await getHomeViewComponent();
 var PidTunerView = await getPidTunerViewComponent();
@@ -72,11 +74,7 @@ window.mainVue = new Vue({
         }
       }, 60000);
       // wait for module load
-      //console.time('PidTuner.await()');
-      await PidTuner.await();
-      //console.timeEnd('PidTuner.await()');
-      // setup tuner
-      window.pid = new Arma.pid_tuner();
+      await PidWorker.await();
       // enable pid tuner
       this.pid_loaded = true;
     }
