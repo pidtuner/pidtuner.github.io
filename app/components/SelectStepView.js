@@ -163,6 +163,10 @@ var SelectStepView = {
 		//         this.ranges is downsampled
 		// set selected range for list and display
 		this.using_list_range = true;
+		// early exit
+		if(range.isEqual(this.selected_range)) {
+			return;
+		}
 		// do it the vue way
 		this.selected_range.splice(0, 2);
 		this.selected_range.push(range[0]);
@@ -230,14 +234,20 @@ var SelectStepView = {
 				if(row_end >= this.uniform_time.length) {
 					row_end = this.uniform_time.length - 1;
 				}
-				// set selected range for list and display
-				if(this.selected_range[0] != row_start || this.selected_range[1] != row_end) {
-					this.using_list_range = false;
-					// do it the vue way
-					this.selected_range.splice(0, 2);
-					this.selected_range.push(row_start);
-					this.selected_range.push(row_end);
+				
+				// early exit
+				if(isNaN(row_start) || isNaN(row_end)) {
+					return;
 				}
+				if(this.selected_range[0] == row_start && this.selected_range[1] == row_end) {
+					return;
+				}
+				// set selected range for list and display
+				this.using_list_range = false;
+				// do it the vue way
+				this.selected_range.splice(0, 2);
+				this.selected_range.push(row_start);
+				this.selected_range.push(row_end);
 			};
 			this.rangedChangedThrottle = throttle(rangedChanged, 200);
 		}
@@ -256,6 +266,10 @@ var SelectStepView = {
     	}
 	  	if(Math.abs(this.selected_range[1] - this.uniform_time.length) < this.step_data) {
 			row_end = this.length_data-1;
+    	}
+    	// early exit
+    	if(isNaN(row_start) || isNaN(row_end)) {
+    		return;
     	}
     	// TODO : round down?
 		// set as selected range for chart

@@ -333,7 +333,10 @@ var PidTunerView = {
   		}
   		// add undo value to cache 
   		this.undo_stack_cache[key] = valOld;
-		// NOTE : save sliders cache until simulation updated because there are delays involved
+  		// NOTE : save step state until next state initial variables loaded, because there are delays involved
+		if(key == 'current_step') { return; }
+		if(key == 'latest_step' ) { return; }
+		// NOTE : save sliders cache until simulation updated, because there are delays involved
 		if(key == 'cached_gains_slider') { return; }
 		if(key == 'cached_time_slider' ) { return; }
   		// create throttle func if not exists
