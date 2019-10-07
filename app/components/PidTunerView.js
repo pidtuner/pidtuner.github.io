@@ -95,7 +95,9 @@ var PidTunerView = {
       Import your <a href="https://en.wikipedia.org/wiki/Step_response" target="_blank">step response data</a> here. 
       Copy and paste to the table below using the ctrl+v shortcut. 
       Match each column of the table with the corresponding data. 
-      All three columns must be of the same length. A minimum of 50 samples is required.
+      All three columns must be of the same length. 
+      A minimum of 50 samples is required.
+      Right click over the table headers or rows to get a context menu.
       `
     };
     this.stepInfo['select_step' ] = {
@@ -129,7 +131,8 @@ var PidTunerView = {
       info  : `
       These PID gains provide a starting point for tuning your PID.
       Feel free to change the PID gains as desired and see the resulting step 
-      and disturbance response changing in real time. 
+      and disturbance response changing in real time.
+      Press Enter after changing a value to update the simulation. 
       The PID implementation used in the simulation is the 
       <a href="https://en.wikipedia.org/wiki/PID_controller#Discrete_implementation" target="_blank">
 		velocity algorithm

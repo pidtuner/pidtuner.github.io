@@ -354,7 +354,7 @@ var ImportDataView = {
 	  	    return;
 	  	}
 	  }
-	  // set nnew vectors for charts
+	  // set new vectors for charts
 	  if(!this.time  .isEqual(tmp_time  )) { this.time  .copyFrom(tmp_time  ); }
 	  if(!this.input .isEqual(tmp_input )) { this.input .copyFrom(tmp_input ); }
 	  if(!this.output.isEqual(tmp_output)) { this.output.copyFrom(tmp_output); }
@@ -458,7 +458,14 @@ var ImportDataView = {
     	this.time  .splice(0, this.time  .length);
     	this.input .splice(0, this.input .length);
     	this.output.splice(0, this.output.length);
-    	this.hot_data = [['','','']]; 
+    	// fix : leave at least two rows after clearing to make easier import
+    	this.hot_data = [['0.0','0.0','0.0'],['0.1','0.0','0.0']]; 
+    	this.time  .splice(0, 0, [0.1]);
+    	this.input .splice(0, 0, [0.0]);
+    	this.output.splice(0, 0, [0.0]);
+    	this.time  .splice(0, 0, [0.0]);
+    	this.input .splice(0, 0, [0.0]);
+    	this.output.splice(0, 0, [0.0]);
     	this.on_afterChange();
     	this.$emit('latestStep');
     },
@@ -513,7 +520,7 @@ var ImportDataView = {
 					old_row_end     = old_row_tmp  ;
 				}
 				// avoid infinite loop
-				if(new_row_start != old_row_start) {
+				if(old_row_end && new_row_start != old_row_start) { // fix : test for old_row_end not null (happens when hot empty)
 					old_row_end   = old_row_end   >= 0 ? old_row_end   : new_row_end  ; // fix
 					this.table.selectCell(new_row_start, 0, old_row_end, 2, true, true);
 				}
