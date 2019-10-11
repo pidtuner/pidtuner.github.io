@@ -262,25 +262,19 @@ const PidWorker = {
 		var sim_length   = Arma.CxMat.zeros(1, 1);
 		sim_length.set_at(0, 0, new Arma.cx_double(sim_length_r, 0.0));
 		// Create Reference
-		data.pidsim_ref.splice(0, data.pidsim_ref.length);
 		var r_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {
 			// ref value
 			var r_value = i > Math.ceil(data.r_time*sim_length_r) ? data.cached_r_size : 0.0;
-			// for chart
-			data.pidsim_ref.push(r_value);
-			// for simulation
+			// for simulation (and chart)
 			 r_sim.set_at(i, 0, new Arma.cx_double(r_value, 0)); 
 		}
 		// Create Input Disturbance
-		data.pidsim_dist.splice(0, data.pidsim_dist.length);
 		var d_sim = Arma.CxMat.zeros(sim_length_r, 1);
 		for(var i = 0; i < sim_length_r; i++) {
 			// ref value
 			var d_value = i > Math.ceil(data.d_time*sim_length_r) ? data.cached_d_size : 0.0;
-			// for chart
-			data.pidsim_dist.push(d_value);
-			// for simulation
+			// for simulation (and chart)
 			 d_sim.set_at(i, 0, new Arma.cx_double(d_value, 0)); 
 		}
 		// make time simulation
@@ -290,6 +284,8 @@ const PidWorker = {
 		// outputs (also sim_length_r, sim_ts_r)
 		var u_sim_r = u_sim.real().to_array().map(arr => arr[0]);
 		var y_sim_r = y_sim.real().to_array().map(arr => arr[0]);
+		var r_sim_r = r_sim.real().to_array().map(arr => arr[0]);
+		var d_sim_r = d_sim.real().to_array().map(arr => arr[0]);
 		// make bode plot
 		var model = new Arma.pid_model();
 		model.set_type  (data.selected_model.type);
@@ -322,6 +318,8 @@ const PidWorker = {
 		    sim_ts_r     : sim_ts_r,
 		    u_sim_r      : u_sim_r,
             y_sim_r      : y_sim_r,
+            r_sim_r      : r_sim_r,
+            d_sim_r      : d_sim_r,
             w_r          : w_r  ,
             mag_r        : mag_r,
             pha_r        : pha_r,

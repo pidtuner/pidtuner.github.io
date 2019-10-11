@@ -455,16 +455,16 @@ var TunePidView = {
 			uniform_time   : this.uniform_time,
 			selected_model : this.selected_model,
 			time_scale     : this.time_scale,
-			pidsim_ref     : this.pidsim_ref,
 			r_time         : this.r_time,
 			cached_r_size  : this.cached_r_size,
-			pidsim_dist    : this.pidsim_dist,
 			d_time         : this.d_time,
 			cached_d_size  : this.cached_d_size
 		});
 		// copy time simulation results
 		this.pidsim_input .copyFrom(result.u_sim_r);
 		this.pidsim_output.copyFrom(result.y_sim_r);
+		this.pidsim_ref   .copyFrom(result.r_sim_r);
+		this.pidsim_dist  .copyFrom(result.d_sim_r);
 		this.pidsim_time  .splice(0, this.pidsim_time  .length);
 		for(var i = 0; i < result.sim_length_r; i++) {
 			this.pidsim_time.push(i * result.sim_ts_r);
