@@ -68,32 +68,6 @@ var HomeView = {
           url     : 'https://semantic-ui.com/'
         }
       ],
-      list_sponsors : [
-        {
-          title   : 'Your Name',
-          descrip : `Some short text can go here.`,
-          logo    : './assets/logo/logo_text.svg',
-          url     : 'https://www.patreon.com/pidtuner'
-        },
-        {
-          title   : 'Your Logo',
-          descrip : `Click here to support.`,
-          logo    : './assets/logo/logo_text.svg',
-          url     : 'https://www.patreon.com/pidtuner'
-        },
-        {
-          title   : 'Your Space',
-          descrip : `You can put a link to your website.`,
-          logo    : './assets/logo/logo_text.svg',
-          url     : 'https://www.patreon.com/pidtuner'
-        },
-        {
-          title   : 'Sponsor Us',
-          descrip : `This appears in the front page.`,
-          logo    : './assets/logo/logo_text.svg',
-          url     : 'https://www.patreon.com/pidtuner'
-        },
-      ],
     }
   },
   computed: {
