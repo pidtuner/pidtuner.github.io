@@ -404,6 +404,10 @@ var ImportDataView = {
 			row_end = this.length_data-1;
     	}
     	// TODO : round down?
+    	// check if need to update ranges
+    	if(!this.ranges_enabled) {
+    		return;
+    	}
     	// set to chart
     	this.ranges   = [[0, row_start, row_end]];
     },

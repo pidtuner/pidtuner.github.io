@@ -1,4 +1,4 @@
-importScripts("./../../vendor/comlinkjs-3.0.2/comlink.js");
+importScripts("https://cdn.jsdelivr.net/npm/comlink@4.3.0/dist/umd/comlink.min.js");
 importScripts("./pid_tuner.js");
 
 // Helpers
