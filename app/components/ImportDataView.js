@@ -108,7 +108,7 @@ var ImportDataView = {
     // init time, input, output
     this.on_afterChange();
     // copy hot instance
-    this.table = this.$refs.hot.table;
+    this.table = this.$refs.hot.hotInstance;
     // add context menu
     this.table.updateSettings({
       // NOTE : need to modify this.hot_data directly
@@ -551,7 +551,7 @@ var ImportDataView = {
     },
   }, // watch
   components: {
-    'v-hot-table' : HotTable,
+    'v-hot-table' : Handsontable.vue.HotTable,
   }
 };
 

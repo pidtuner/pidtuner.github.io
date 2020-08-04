@@ -1,7 +1,7 @@
 (async function () { // IFFE
 // ------------------------------------------------------------------------
 
-window.PidWorker = Comlink.proxy(new Worker('./pid/v1.0.4/pid_worker.js'));
+window.PidWorker = Comlink.proxy(new Worker('./pid/v1.0.5/pid_worker.js'));
 
 // init Vue
 var HomeView     = await getHomeViewComponent();

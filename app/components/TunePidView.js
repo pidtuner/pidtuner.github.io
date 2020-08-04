@@ -381,7 +381,6 @@ var TunePidView = {
 		var Td      = result.gains[2];
 		var I       = result.gains[3];
 		var D       = result.gains[4];
-		var du_lim  = result.gains[5];
 		// create array if empty
 		if(this.pid_gains.length <= 0) {
 			this.pid_gains
@@ -419,13 +418,6 @@ var TunePidView = {
 					    units   : '[-]',
 					    descrip : 'Derivative Gain',
 					    editable: false
-					   },
-					   {
-					    name    : 'du_lim',
-					    val     : 0.0,
-					    units   : '[-]',
-					    descrip : 'Input Rate Limit',
-					    editable: true
 					   }]);
 		}		
 		// update gains in vue
@@ -433,8 +425,7 @@ var TunePidView = {
 		Vue.set(this.findGain('Ti'), 'val', Ti);
 		Vue.set(this.findGain('Td'), 'val', Td);	
 		Vue.set(this.findGain('I') , 'val', I );	
-		Vue.set(this.findGain('D') , 'val', D );	
-		Vue.set(this.findGain('du_lim'), 'val', du_lim);	
+		Vue.set(this.findGain('D') , 'val', D );
 	},
 	async makeSimulation() {
 		// get gains
@@ -443,7 +434,6 @@ var TunePidView = {
 		var Td      = this.findGain('Td'    ).val;
 		var I       = this.findGain('I'     ).val;
 		var D       = this.findGain('D'     ).val;
-		var du_lim  = this.findGain('du_lim').val;
 		// update in worker
 		var result = await PidWorker.makeSimulation({
 			Kp             : Kp    ,
@@ -451,7 +441,6 @@ var TunePidView = {
 			Td             : Td    ,
 			I              : I     ,
 			D              : D     ,
-			du_lim         : du_lim,
 			uniform_time   : this.uniform_time,
 			selected_model : this.selected_model,
 			time_scale     : this.time_scale,
