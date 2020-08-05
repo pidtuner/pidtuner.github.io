@@ -16,7 +16,8 @@
 		</div>
       </div>
       <div class="row import-hot-container" v-show="hot_display">
-	    <v-hot-table :settings   = "hot_settings"
+	    <v-hot-table licenseKey="non-commercial-and-evaluation"
+	                 :settings   = "hot_settings"
 	    			 :data       = "hot_data"
 	    			 :col-headers= "hot_headers"
 	    			 :columns    = "getHotColumns()"

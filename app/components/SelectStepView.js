@@ -163,10 +163,7 @@ var SelectStepView = {
 		//         this.ranges is downsampled
 		// set selected range for list and display
 		this.using_list_range = true;
-		// early exit
-		if(range.isEqual(this.selected_range)) {
-			return;
-		}
+		// NOTE : no early exit, else range is not shown in chart
 		// do it the vue way
 		this.selected_range.splice(0, 2);
 		this.selected_range.push(range[0]);

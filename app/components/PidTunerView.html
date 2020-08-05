@@ -10,7 +10,7 @@
 								   'active'   : current_step == step ? true : false,
 								   'disabled' : isStepDisabled(step)
 							   }"
-							   @click="current_step = step; step_loaded = false; if(current_step == latest_step) { next_enabled = false; } else { next_enabled = true; }">
+							   @click="if(current_step == step) { return;} current_step = step; step_loaded = false; if(current_step == latest_step) { next_enabled = false; } else { next_enabled = true; }">
 					<i :class="getIcon(step)"></i>
 					<div class="content">
 					  <div class="title">{{ getTitle(step) }}</div>
