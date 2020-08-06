@@ -40,8 +40,8 @@ var ImportDataView = {
 	  hot_display  : false, // Fixed hot rendering issue
       hot_data     : [['','','']],
       hot_settings : {
-          copyPaste: true,
-          colHeaders           : true ,
+          copyPaste            : true ,
+          colHeaders           : ['Time','Input','Output'],
           rowHeaders           : true ,
           stretchH             : 'all',
           outsideClickDeselects: false,
@@ -53,22 +53,30 @@ var ImportDataView = {
             this.hot_data.copyFrom(this.table.getData());
             // update charts
             this.on_afterChange();
+            this.ranges.splice(0, this.ranges.length);
+	        this.table.selection.deselect();
             // left menu
             this.$emit('latestStep');
           },
           afterSelection : (row_start, col_start, row_end, col_end) => {
           	// fix, after empty arrays
-          	if(this.time.length <= 0) {
+          	if(this.time.length <= 0 || Math.abs(col_end-col_start) != 2) {
+          		this.ranges.splice(0, this.ranges.length);
           		return;
           	}
           	this.on_afterSelection(row_start, row_end);
           },
-          beforePaste: function(data) {
+          beforePaste: (data) => {
+          	this.ranges.splice(0, this.ranges.length);
           	if(data.length <= 0) {
           		return;
           	}
+          	// use papa parse only if hot failed to parse
           	if(data[0].length == 1) {
-				var results = Papa.parse(data.flat(1).join('\n'));
+				var results = Papa.parse(data.flat(1).join('\n'), {
+					keepEmptyRows: false,
+                    skipEmptyLines: true
+				});
       			if(results.data[0].length <= 1) {
       				return;
       			}
@@ -78,14 +86,26 @@ var ImportDataView = {
           	}
           },
       },
-      hot_headers   : ['Time','Input','Output'],
-      ranges_enabled: true,
+      hot_columns   : [
+          {              
+			  validator: 'numeric',
+			  allowInvalid : true // mark as red if invalid     
+          },
+          {
+              validator: 'numeric',
+			  allowInvalid : true             	
+          },
+          {
+              validator: 'numeric',
+			  allowInvalid : true            	
+          }
+      ],
       ranges        : [],
       show_error    : false,
       error_class   : 'negative',
       error_title   : 'Invalid Data',
       error_message : 'Unknown Error',
-      max_chart_len : 300    
+      max_chart_len : 300
     }
   },
   beforeDestroy: function() {
@@ -96,7 +116,7 @@ var ImportDataView = {
   	// show hot (fix for render issue)
   	this.hot_display = true;
   	// if already have values, load them, else test data
-  	this.hot_data = [];
+  	this.hot_data.splice(0, this.hot_data.length);
   	if(this.time.length > 0) {  
 		// NOTE : need to clone data or it wont work in vue
 		this.updateHotData();
@@ -105,10 +125,10 @@ var ImportDataView = {
   		// use test data
   		this.hot_data.copyFrom(test_data);
   	}
-    // init time, input, output
-    this.on_afterChange();
     // copy hot instance
     this.table = this.$refs.hot.hotInstance;
+    // init time, input, output
+    this.on_afterChange();
     // add context menu
     this.table.updateSettings({
       // NOTE : need to modify this.hot_data directly
@@ -190,15 +210,14 @@ var ImportDataView = {
           "clear": {
             name: 'Clear Table',
             callback: (key, options) => {
-              this.hot_data = [['','','']];
-              this.on_afterChange();
+              this.clearTableClicked();
             }
           }
         }   // items
       }   // contextMenu
     }); // updateSettings
     // emit step loaded
-    this.$emit('stepLoaded');
+    this.$emit('stepLoaded');  
   }, // mounted
   computed: {
   	input_chart_data: function() {
@@ -319,18 +338,14 @@ var ImportDataView = {
 	  }
 	  // disable ranges if invalid samples found
 	  if(invalid_sample >= 0) {
-	  	this.ranges_enabled = false;	
-	  	this.ranges         = [];
+	  	this.ranges.splice(0, this.ranges.length);
 		// error message
 	  	this.show_error    = true;  
 	  	this.error_class   = 'negative';
 	  	this.error_title   = 'Invalid Data';
-        this.error_message = `Inalid numeric value found at sample ${invalid_sample+1}.`;
+        this.error_message = `Invalid numeric value found at sample ${invalid_sample+1}.`;
 	  	this.$emit('disableNext');
 	  	return;  	
-	  }
-	  else {
-	  	this.ranges_enabled = true;
 	  }
 	  // validate minimum length
 	  if(tmp_time.length < 50) {
@@ -355,11 +370,16 @@ var ImportDataView = {
 	  	}
 	  }
 	  // set new vectors for charts
-	  if(!this.time  .isEqual(tmp_time  )) { this.time  .copyFrom(tmp_time  ); }
-	  if(!this.input .isEqual(tmp_input )) { this.input .copyFrom(tmp_input ); }
-	  if(!this.output.isEqual(tmp_output)) { this.output.copyFrom(tmp_output); }
+	  var any_change = false;
+	  if(!this.time  .isEqual(tmp_time  )) { this.time  .copyFrom(tmp_time  ); any_change = true; }
+	  if(!this.input .isEqual(tmp_input )) { this.input .copyFrom(tmp_input ); any_change = true; }
+	  if(!this.output.isEqual(tmp_output)) { this.output.copyFrom(tmp_output); any_change = true; }
+	  if(any_change) { 
+	      // force hot cell validation because getColData might have changed the text	      
+	      this.updateHotData(); 
+	      this.table.validateCells(); 	      
+	  }
 	  // success
-	  this.ranges_enabled = true;
 	  this.show_error     = true;  
       this.error_class    = 'success';
       this.error_title    = 'Valid Data';
@@ -394,43 +414,47 @@ var ImportDataView = {
     	// transform to downsampled
     	this.left_row_start = row_start % this.step_data;
 		this.left_row_end   = row_end   % this.step_data;
-    	row_start = Math.floor(row_start/this.step_data);
-    	row_end   = Math.floor(row_end/this.step_data);
+    	var down_row_start = Math.floor(row_start/this.step_data);
+    	var down_row_end   = Math.floor(row_end/this.step_data);
     	// roundup
     	if(Math.abs(this.old_row_start - this.time.length) < this.step_data) {
-			row_start = this.length_data-1;
+			down_row_start = this.length_data-1;
     	}
 	  	if(Math.abs(this.old_row_end - this.time.length) < this.step_data) {
-			row_end = this.length_data-1;
-    	}
-    	// TODO : round down?
-    	// check if need to update ranges
-    	if(!this.ranges_enabled) {
-    		return;
+			down_row_end = this.length_data-1;
     	}
     	// set to chart
-    	this.ranges   = [[0, row_start, row_end]];
-    },
-    getHotColumns() {
-      var retArr = [];
-      for(var i = 0; i < 3; i++) {
-        retArr.push({
-          validator: (newVal, isOkCallback) => {
-            // validator (NaN if not parsed correctly)
-            isOkCallback(!isNaN(parseFloat(newVal)));   
-          },
-          // just mark as red if invalid
-          allowInvalid : true
-        });
-      }
-      return retArr;	  
+    	this.ranges.copyFrom([[0, down_row_start, down_row_end]]);
     },
     getColData(source, col_num) {
       var arr = [];
       for(var i = 0; i < source.length; i++) {
         var row = source[i];
-        var val = parseFloat(row[col_num]);
-        //arr.push(isNaN(val) ? 0.0 : val); // TODO : allow NaN and clear elsewhere
+        var val = row[col_num];
+        if(typeof val === "string")
+        {
+			var num_commas = val.split(',').length - 1;
+			var num_points = val.split('.').length - 1;
+			if(num_commas > 0)
+			{
+				// assume commma is decimal separator if is the only existing separator
+				// else find right-most separator and use that one, cleaning the rest
+				if(num_commas == 1 && num_points != 1)
+				{
+					val = val.replace(',', '.')
+				}       	
+				else
+				{
+					var comma_last_pos = val.lastIndexOf(",");
+					var point_last_pos = val.lastIndexOf(".");
+					var separator_pos = comma_last_pos > point_last_pos ? comma_last_pos : point_last_pos;
+					val = val.replace(',', '');
+					val = val.replace('.', '');
+					val = [val.slice(0, separator_pos), '.', val.slice(separator_pos)].join('');
+				}
+			}
+			val = parseFloat(val);
+        }
         arr.push(val);
       }
       return arr;
@@ -459,11 +483,12 @@ var ImportDataView = {
 		this.$emit('latestStep');
     },
     clearTableClicked() {
+    	this.ranges.splice(0, this.ranges.length);
     	this.time  .splice(0, this.time  .length);
     	this.input .splice(0, this.input .length);
     	this.output.splice(0, this.output.length);
     	// fix : leave at least two rows after clearing to make easier import
-    	this.hot_data = [['0.0','0.0','0.0'],['0.1','0.0','0.0']]; 
+    	this.hot_data.copyFrom([['0.0','0.0','0.0'],['0.1','0.0','0.0']]); 
     	this.time  .splice(0, 0, [0.1]);
     	this.input .splice(0, 0, [0.0]);
     	this.output.splice(0, 0, [0.0]);
@@ -472,6 +497,9 @@ var ImportDataView = {
     	this.output.splice(0, 0, [0.0]);
     	this.on_afterChange();
     	this.$emit('latestStep');
+    	this.table.validateCells(); 
+    	this.table.selection.deselect();
+    	this.table.scrollViewportTo(0, 0);
     },
     loadTestData() {
     	// use test data
@@ -501,9 +529,13 @@ var ImportDataView = {
 	ranges: function(){
 		if (!this.rangedChangedThrottle) {
 			var rangedChanged = () => {	
+			    // ignore if no ranges
+			    if(this.ranges.length <= 0) {			    	
+			    	return;
+			    }
 				// get downsampled values
-				var new_row_start = this.ranges.length > 0 ? this.ranges[0][1] : -1;
-				var new_row_end   = this.ranges.length > 0 ? this.ranges[0][2] : -1;
+				var new_row_start = this.ranges[0][1];
+				var new_row_end   = this.ranges[0][2];
 				// transform to upsampled
 				new_row_start = new_row_start * this.step_data + (this.left_row_start ? this.left_row_start : 0);
 				new_row_end   = new_row_end   * this.step_data + (this.left_row_end   ? this.left_row_end   : 0);

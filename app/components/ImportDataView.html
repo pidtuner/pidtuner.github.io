@@ -2,11 +2,13 @@
 
   <div class="five wide column">
     <div class="ui one column grid">
+
       <div class="row import-clean-div">
         <button class="fluid ui button" @click="hot_data.length > 2 ? clearTableClicked() : loadTestData()">
       		{{ hot_data.length > 2 ? "Clear Table" : "Load Test Data" }}
 	    </button>
       </div>
+
       <div class="row import-error-container" :disabled="!show_error">
 		<div :class="['ui', error_class, 'message', 'import-error-message']">
 		  <div class="header">
@@ -15,26 +17,25 @@
 		  <p>{{ error_message }}</p>
 		</div>
       </div>
+
       <div class="row import-hot-container" v-show="hot_display">
 	    <v-hot-table licenseKey="non-commercial-and-evaluation"
 	                 :settings   = "hot_settings"
 	    			 :data       = "hot_data"
-	    			 :col-headers= "hot_headers"
-	    			 :columns    = "getHotColumns()"
+	    			 :columns    = "hot_columns"
 	    			  ref="hot">
 	    </v-hot-table>
       </div>
+
     </div>
   </div>
 
   <div class="eleven wide column">
 	<line-chart :chart-data="output_chart_data" 
-	            :ranges_enabled="ranges_enabled"
 	            :ranges="ranges"
 	            :cssClasses="'import-chart'">
 	</line-chart>
 	<line-chart :chart-data="input_chart_data"  
-	            :ranges_enabled="ranges_enabled"
 	            :ranges="ranges"
 	            :cssClasses="'import-chart'">
 	</line-chart>

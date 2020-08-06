@@ -8,7 +8,7 @@ getLineChartViewComponent = async function() {
 			Vue.component('line-chart', {
 				extends: VueChartJs.Line,
 				mixins: [VueChartJs.mixins.reactiveProp],
-				props: ['ranges', 'ranges_enabled'],
+				props: ['ranges'],
 				data: function () {
 					return {
 						options: {
@@ -51,7 +51,7 @@ getLineChartViewComponent = async function() {
 					// subscribe to create inital range by click
 					this.canvas.onpointerup = (evt) => {
 						// if not empty return
-						if(this.ranges.length > 0 || !this.ranges_enabled) {
+						if(this.ranges.length > 0) {
 							return;
 						}
 						const points = this.chart.getElementsAtEventForMode(evt, 'index', { intersect: false })
@@ -145,6 +145,9 @@ getLineChartViewComponent = async function() {
 					clearAnnotationsFromChart(chart) {
 						if (chart.options.annotation) {
 							chart.options.annotation.annotations = [];
+							chart.update();
+							// print area
+						    this.addHighlightArea(this.chart, 0, 0);
 						};
 					},
 					addHighlightArea(chart, row_start, row_end, label_start, label_end) {
