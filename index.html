@@ -84,6 +84,7 @@
         <div v-show="false">
 	        <!-- seo headers -->
 	        <h1>PID Tuner is an online tool to tune your PID controller gains for free.  </h1>
+	        <h1>How to tune a PID controller?                                            </h1>
 	        <h2>Tune your PID controller integral proportional and derivative gains easy.</h2>
 	        <h3>The optimal PID controller gains are obtained automatically.             </h3>
 	        <h4>The PID controller gains are optimized for your plant.                   </h4>
@@ -105,10 +106,13 @@
 				free pid loop tuning : A control loop system consists of three componentes, a plant (or system) to control, a controller algorithm and a feedback mechanism.
 				pid controller download : You do not need to download PID Tuning examples or code because you can do the PID Tuning interactive online for free with this software.
 				pid control : Is the most popular control algorithm in industry, manly because it is simple, robust and doog performance in a wide range of operating conditions.
+				pid control : Use the free pid tuning software and get help using our forum at <a href="https://forum.pidtuner.com">"Help forum"</a>.
 				pid tuning software : The most simple way to tune a PID is using PID tuning software that simplifies the process of improving your feedback loops.
 				pid tuning solution : PID Tuner is a solution that simplify the process of tuning multiple individual loops by obtaining PID gains that increase bandwidth and reduce oscillations.
 				pid tuning application : The PID Tuner application lets you achieve the desired performance and design requirements while being completely free.  
 				pid controls : With the feedback control loop the PID controller corrects for errors between the process variables and a desired setpoint.
+				drone : Tune your pitch, roll, jaw PID controller for your quadcopter drone.
+				process control : Tune your process PID control to optimize your plant performance, minimizong errors and maximizing production.
 				This website uses material from the Wikipedia article <a href="https://en.wikipedia.org/wiki/PID_controller">"PID_controller"</a>, which is released under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-Share-Alike License 3.0</a>
 	        </p>
 	        <!-- seo social -->
@@ -157,6 +161,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/3.4.2/vue-router.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
     <script src="./vendor/semantic-ui-range/range.js"></script>
@@ -168,8 +173,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
     <script src="./vendor/chartjs-plugin-draggable-0.1.6/chartjs-plugin-draggable.min.js"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/2.0.4/dexie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dexie/3.0.2/dexie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/comlink@4.3.0/dist/umd/comlink.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/parse/2.15.0/parse.min.js"></script>
 
     <script src="./app/utils.js">                     </script>
     <script src="./app/components/HomeView.js">       </script>

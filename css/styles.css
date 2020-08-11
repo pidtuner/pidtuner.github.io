@@ -241,6 +241,10 @@ PID TUNER COMPONENT */
   padding-top 0 !important;
 }
 
+.pid-tuner-steps {
+  cursor: pointer;
+}
+
 /* ***********************************************************************
 IMPORT COMPONENT */
 

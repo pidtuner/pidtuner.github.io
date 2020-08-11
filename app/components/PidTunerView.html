@@ -3,6 +3,28 @@
 
 	<div class="tablet only four wide tablet three wide computer column pid-tuner-cols">
 		<div class="ui one column">
+
+			<div class="row">
+			    <div class="ui stackable grid">
+			    <div class="eight wide column">
+                <button class="fluid ui black icon button" 
+						@click="on_saveClicked(false)">
+					<i class="save icon"></i>
+					Save
+				</button>
+				</div>
+				<div class="eight wide column">
+				<button class="fluid ui grey icon button" 
+						@click="on_saveClicked(true)">
+					<i class="save icon"></i>
+					Save As
+				</button>
+				</div>
+				</div>
+			</div>
+
+			<div class="ui divider"></div>
+
 			<div class="row">
 				<div class="ui fluid vertical steps pid-tuner-steps">  
 				  <div v-for="step in all_steps" :class="{
@@ -18,6 +40,7 @@
 				  </div> 
 				</div>
 			</div>
+
 			<div class="row pid-tuner-info" v-if="show_message">
 				<div class="sixteen wide column">
 					<div class="ui icon message">
@@ -104,4 +127,23 @@
 	</div>
 
 	<div class="computer only one wide column pid-tuner-cols"></div>
+
+<div class="ui mini modal" ref="dialog">
+  <i class="close icon"></i>
+  <div class="header">
+    {{ dialog.title }}
+  </div>
+  <div class="content">
+    <div class="description">
+      <div class="ui header">{{ dialog.header }}</div>
+      <p v-html="dialog.content"></p>
+    </div>
+  </div>
+  <div class="actions">
+    <div class="ui black deny button">
+      OK
+    </div>
+  </div>
+</div>
+	
 </div>

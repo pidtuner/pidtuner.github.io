@@ -8,8 +8,18 @@ var HomeView     = await getHomeViewComponent();
 var PidTunerView = await getPidTunerViewComponent();
 var ErrorView    = await getErrorViewComponent();
 
+// router
+window.routerVue = new VueRouter({
+  routes : [
+    {
+      path: '/:proj_id'
+    }
+  ]
+});
+
 // main Vue instance
 window.mainVue = new Vue({
+  router: routerVue,
   el: '#app',
   data () {
     return {

@@ -21,6 +21,10 @@ await $.asyncGet(scriptPidTunerViewDir + "PidTunerView.html", function(data){
     templPidTunerView = data;
 }.bind(this));
 
+// setup parse (API)
+Parse.serverURL = 'https://api.pidtuner.com/parse';
+Parse.initialize("pidtuner");
+
 var PidTunerView = {
   template: templPidTunerView,
   props: {
@@ -28,6 +32,15 @@ var PidTunerView = {
       type    : Array,
       required: false
     },
+    dialog: { // NOTE : didn't put in data because data's keys are used to save to API
+      type    : Object,
+      required: false,
+      default: {
+        "title" : "",
+        "header" : "",
+        "content" : ""
+      }
+    }
   },
   data() {
     return {
@@ -73,7 +86,6 @@ var PidTunerView = {
   beforeMount: function() {
   	// [UNDO] global event listeners
   	// TODO : child components not ready for UNDO
-
 	window.addEventListener('keyup', (e) => {
 		var evtobj = window.event? event : e
       	if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
@@ -83,7 +95,6 @@ var PidTunerView = {
       		this.redo();
       	}
 	});
-
     // create steps info
     this.stepInfo = {};
     this.stepInfo['import_data' ] = {
@@ -143,7 +154,7 @@ var PidTunerView = {
       </a>.
       `
     };
-    // create dixie db 
+    // create dexie db 
     this.db = new Dexie("pidtuner");
     this.db.version(2).stores({
 	  projdata: `proj_id,all_steps,current_step,latest_step,show_message,next_enabled,step_loaded,time,input,output,cached_range_list,selected_range,uniform_time,uniform_input,uniform_output,cached_model_list,selected_model,cached_gains_slider,cached_time_slider,cached_r_size,cached_d_size,pid_gains,pidsim_time,pidsim_input,pidsim_output,pidsim_ref,pidsim_dist,margins,bode_w,bode_mag,bode_pha`
@@ -157,40 +168,9 @@ var PidTunerView = {
 	});
 	this.db.version(1).stores({
 	  projdata: `proj_id,all_steps,current_step,latest_step,show_message,next_enabled,step_loaded,time,input,output,cached_range_list,selected_range,uniform_time,uniform_input,uniform_output,cached_model_list,selected_model,cached_gains_slider,cached_time_slider,cached_r_size,cached_d_size,pid_gains,pidsim_time,pidsim_input,pidsim_output,pidsim_ref,pidsim_dist`
-	});  
-	// create method to reuse
-	this.getDbObj = () => {
-		return this.db.projdata.where("proj_id").equals(0);
-	};
-	// try to load if any
-	this.getDbObj().first().then((data) => {
-			const dataKeys = Object.keys(this.$data);
-			if(data) {
-				// load vue data
-				for(var i = 0; i < dataKeys.length; i++) {
-					const currKey = dataKeys[i];
-					this[currKey] = data[currKey];
-				}
-			}
-			else {
-				// add it for the first time
-				this.createDbEntry();
-			}
-			// subscribe to changes
-			for(var i = 0; i < dataKeys.length; i++) {
-				const currKey = dataKeys[i];
-				// subscribe to each key in data
-				this.$watch(currKey, (value) => {
-					// update key in IndexedDb
-					this.updateDbEntry(currKey, value);
-				}, {
-					deep: true
-				});
-			}
-		})
-		.catch((err) => {
-			console.warn(err);
-		}); 
+	});
+	// load data from dexie db
+	this.loadDb();
   },
   mounted: function() {
     // setup close button for info
@@ -203,6 +183,57 @@ var PidTunerView = {
     });       
   },
   methods: {
+  	// load a specific project from the db, proj_id is given from route, if undefined, default is 0
+  	loadDb : function() {
+  		// read proj_id from route if any
+	    this.proj_id = typeof this.$route.params.proj_id === "undefined" ? 0 : this.$route.params.proj_id;
+  		// create method to reuse
+		this.getDbObj = () => {		
+			return this.db.projdata.where("proj_id").equals(this.proj_id);
+		};
+		// try to load if any
+		this.getDbObj().first().then((data) => {
+			const dataKeys = Object.keys(this.$data);
+			if(data) {
+				// load vue data
+				for(var i = 0; i < dataKeys.length; i++) {
+					const currKey = dataKeys[i];
+					if(Array.isArray(data[currKey])) {
+                        this[currKey].copyFrom(data[currKey]);
+					}
+					else {
+						this[currKey] = data[currKey];
+					}					
+				}
+			}
+			else {
+				// add it for the first time
+				this.createDbEntry();
+			}
+			// subscribe to changes
+			for(var i = 0; i < dataKeys.length; i++) {
+				const currKey = dataKeys[i];
+				// ignore proj_id
+				if(currKey === "proj_id") {
+					continue;
+				}
+				// subscribe to each key in data
+				this.$watch(currKey, (value) => {
+					// update key in IndexedDb
+					this.updateDbEntry(currKey, value);
+				}, {
+					deep: true
+				});
+			}
+			// if proj_id !== 0 then fetch projetc from API
+			if(this.proj_id !== 0) {
+				this.fetchProject();
+			}
+		})
+		.catch((err) => {
+			console.warn(err);
+		});		
+  	},
   	// create initial (one time) db entry
   	createDbEntry : function() {
   		this.db.projdata.add(this.$data).then(() => {
@@ -238,9 +269,7 @@ var PidTunerView = {
 						}
 						// [UNDO] push old value to undo stack before updating
 						// TODO : child components not ready for UNDO
-
-						this.addUndo(dbKey, dbObj[dbKey]);
-						
+						this.addUndo(dbKey, dbObj[dbKey]);						
 						// update IndexedDb value
 						dbObj[dbKey] = dbVal;				
 					}
@@ -251,7 +280,7 @@ var PidTunerView = {
   		}
   		// call 
   		this.throttle_updateDbEntry();	
-  	},
+  	},  
     // check if should disable
     isStepDisabled: function(stepName) {
       return this.stepInfo[stepName].num > this.stepInfo[this.latest_step].num;
@@ -305,6 +334,136 @@ var PidTunerView = {
     		this.next_enabled = false; 
 		} );
     },
+    on_saveClicked: async function(asNew) {
+        // save project data to parse object
+    	const dataKeys = Object.keys(this.$data);
+        // get existing object if any
+    	if(!asNew && this.proj_id !== 0) {
+    		var projQuery = new Parse.Query("PidProject");
+	        projQuery.equalTo("objectId", this.proj_id);
+	        try {
+	            var proj = await projQuery.find();
+	            proj = proj[0];
+	        } 
+	        catch (error) {
+		        // show dialog
+				this.dialog = {
+					"title" : "Error",
+					"header" : "Failed to fetch project",
+					"content" : `Failed to fetch existing project.<br>Error code: ${error.message}`
+				}            
+				this.$nextTick( () => {
+					$(this.$refs.dialog).modal('show');
+				});
+	        }
+    	}
+    	if (asNew || proj === undefined || proj.length === 0) {
+    		// get project class (create if not exists)
+			var PidProject = Parse.Object.extend("PidProject");
+			// create new instance of class
+			var proj = new PidProject();
+    	}     
+		for(var i = 0; i < dataKeys.length; i++) {
+			const currKey = dataKeys[i];
+			// ignore proj_id
+			if(currKey === "proj_id") {
+				continue;
+			}
+			proj.set(currKey, this[currKey]);
+		}
+		// save data (asynchronously)
+		try {
+		    proj = await proj.save(/*null, {useMasterKey: true}*/);
+		    // if saved correctly, set new proj id (there is no watch on proj_id, so wont change in dexie)
+		    this.proj_id = proj.id;
+		    // change route programmatically (will trigger route change which in turns calls loadDb with the new proj_id)
+		    if(this.$route.params.proj_id === this.proj_id) {
+		    	// show dialog
+                this.dialog = {
+                	"title" : "Success",
+                	"header" : "Your project has been updated",
+                	"content" : `Use the following link to share your project.<br><a href="https://pidtuner.com/#/${this.proj_id}">https://pidtuner.com/#/${this.proj_id}</a>`
+                }            
+			    this.$nextTick( () => {
+			    	$(this.$refs.dialog).modal('show');
+			    });
+		    	return;
+		    }
+            this.$router.push(`/${this.proj_id}`);
+            // show dialog
+            this.dialog = {
+            	"title" : "Success",
+            	"header" : "Your project has been saved",
+            	"content" : `Use the following link to share your project.<br><a href="https://pidtuner.com/#/${this.proj_id}">https://pidtuner.com/#/${this.proj_id}</a>`
+            }            
+			this.$nextTick( () => {
+				$(this.$refs.dialog).modal('show');
+			});
+		}
+		catch(error) {
+			// show dialog
+            this.dialog = {
+            	"title" : "Error",
+            	"header" : "Failed to fetch project",
+            	"content" : `Failed to fetch existing project.<br>Error code: ${error.message}`
+            }            
+			this.$nextTick( () => {
+				$(this.$refs.dialog).modal('show');
+			});
+		};
+    },
+    fetchProject: async function() {
+    	console.assert(this.proj_id !== 0 && typeof this.proj_id === "string");
+        var projQuery = new Parse.Query("PidProject");
+		projQuery.equalTo("objectId", this.proj_id);
+		try {
+			var proj = await projQuery.find();
+			if(proj.length === 0) {
+                // show dialog
+				this.dialog = {
+					"title" : "Error",
+					"header" : "Failed to find project",
+					"content" : `Failed to find project with id ${this.proj_id}.`
+				}            
+				this.$nextTick( () => {
+					$(this.$refs.dialog).modal('show');
+				});
+				return;
+			}
+			proj = proj[0];
+			const dataKeys = Object.keys(this.$data);
+			for(var i = 0; i < dataKeys.length; i++) {
+				const currKey = dataKeys[i];
+				// ignore proj_id
+				if(currKey === "proj_id") {
+					continue;
+				}
+				//
+				var val = proj.get(currKey);
+				if(val === undefined) {
+					continue;
+				}
+				if(Array.isArray(this[currKey])) {
+					console.assert(Array.isArray(val));
+					this[currKey].copyFrom(val);
+				}
+				else {
+					this[currKey] = val;
+				}
+			}
+		} 
+		catch (error) {
+			// show dialog
+			this.dialog = {
+				"title" : "Error",
+				"header" : "Failed to fetch project",
+				"content" : `Failed to fetch project with id ${this.proj_id}.<br>Error code: ${error.message}`
+			}            
+			this.$nextTick( () => {
+				$(this.$refs.dialog).modal('show');
+			});			
+		}
+  	},
     resetStep2() {
 	  this.cached_range_list.splice(0, this.cached_range_list.length);
 	  this.selected_range   .splice(0, this.selected_range   .length);
@@ -376,7 +535,12 @@ var PidTunerView = {
 				redoObj[undoKey] = this[undoKey];
 				// update Vue data later
 				this.$nextTick(() => {
-					this[undoKey] = undoObj[undoKey];
+					if(Array.isArray(undoObj[undoKey])) {
+                        this[undoKey].copyFrom(undoObj[undoKey]);
+					}
+					else {
+						this[undoKey] = undoObj[undoKey];
+					}					
 				});
 			}
 			// add to redo stack
@@ -402,14 +566,19 @@ var PidTunerView = {
 				// copy to undo before overwrite
 				undoObj[redoKey] = this[redoKey];
 				// update Vue data later
-				this.$nextTick(() => {
-					this[redoKey] = redoObj[redoKey];
+				this.$nextTick(() => {										
+                    if(Array.isArray(redoObj[redoKey])) {
+                        this[redoKey].copyFrom(redoObj[redoKey]);
+					}
+					else {
+						this[redoKey] = redoObj[redoKey];
+					}
 				});
 			}
 			// add to undo stack
 			this.undo_stack.push(undoObj);
 		});   	
-    }
+    }, 
   }, //methods
   computed: {
     undo_stack: {
@@ -453,6 +622,9 @@ var PidTunerView = {
           // nothing to do here
 		}
 	},
+	$route(to, from) {
+		this.loadDb();
+    }
   },
   components: {
     'v-import-data'  : ImportDataView ,
