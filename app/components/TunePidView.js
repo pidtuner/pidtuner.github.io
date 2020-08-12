@@ -389,35 +389,45 @@ var TunePidView = {
 					    val     : 0.0 ,
 					    units   : '[-]',
 					    descrip : 'Proportional Gain',
-					    editable: true
+					    editable: true,
+					    insync  : true,
+					    oldVal  : ''
 					   },
 					   {
 					    name    : 'Ti',
 					    val     : 0.0 ,
 					    units   : '[sec]',
 					    descrip : 'Integral Time',
-					    editable: true
+					    editable: true,
+					    insync  : true,
+					    oldVal  : ''
 					   },
 					   {
 					    name    : 'Td',
 					    val     : 0.0 ,
 					    units   : '[sec]',
 					    descrip : 'Derivative Time',
-					    editable: true
+					    editable: true,
+					    insync  : true,
+					    oldVal  : ''
 					   },
 					   {
 					    name    : 'I',
 					    val     : 0.0,
 					    units   : '[-]',
 					    descrip : 'Integral Gain',
-					    editable: false
+					    editable: false,
+					    insync  : true,
+					    oldVal  : ''
 					   },
 					   {
 					    name    : 'D',
 					    val     : 0.0,
 					    units   : '[-]',
 					    descrip : 'Derivative Gain',
-					    editable: false
+					    editable: false,
+					    insync  : true,
+					    oldVal  : ''
 					   }]);
 		}		
 		// update gains in vue
