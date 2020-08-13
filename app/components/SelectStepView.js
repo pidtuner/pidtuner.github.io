@@ -63,7 +63,7 @@ var SelectStepView = {
     }
   },
   mounted: async function() {
-	this.range_list = await this.computeRangeList();
+	this.range_list.copyFrom(await this.computeRangeList());
   },
   computed: {
   	input_chart_data: function() {
