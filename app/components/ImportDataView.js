@@ -73,6 +73,12 @@ var ImportDataView = {
           	}
           	// use papa parse only if hot failed to parse
           	if(data[0].length == 1) {
+          		var skip = Math.ceil(data.length / this.max_data_len);
+          		if(data.length > this.max_data_len) {
+          			data.copyFrom(data.filter((row, idx) => {
+                        return idx % skip == 0;
+          			}));
+          		}
 				var results = Papa.parse(data.flat(1).join('\n'), {
 					keepEmptyRows: false,
                     skipEmptyLines: true
@@ -105,7 +111,8 @@ var ImportDataView = {
       error_class   : 'negative',
       error_title   : 'Invalid Data',
       error_message : 'Unknown Error',
-      max_chart_len : 300
+      max_chart_len : 300,
+      max_data_len  : 6000
     }
   },
   beforeDestroy: function() {
@@ -359,7 +366,13 @@ var ImportDataView = {
 	  }
 	  // validate time order
 	  for(i = 1; i < tmp_time.length; i++) {
-	  	if(tmp_time[i] <= tmp_time[i-1]) {
+	  	if(tmp_time[i] == tmp_time[i-1]) {
+	  		// remove repeated time sample
+            tmp_time  .splice(i, 1);
+	  		tmp_input .splice(i, 1);
+	  		tmp_output.splice(i, 1);
+	  	}
+	  	else if(tmp_time[i] < tmp_time[i-1]) {
 	  		// error message
 	  		this.show_error    = true;  
 	  		this.error_class   = 'negative';
