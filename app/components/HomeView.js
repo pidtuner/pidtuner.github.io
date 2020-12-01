@@ -29,45 +29,6 @@ var HomeView = {
   },
   data() {
     return {
-      list_techstack : [
-        {
-          title   : 'C++',
-          descrip : `The main routines are implemented using C++.`,
-          logo    : 'https://isocpp.org/files/img/cpp_logo.png',
-          url     : 'https://isocpp.org/'
-        },
-        {
-          title   : 'CLAPACK',
-          descrip : `Low level linear algebra subroutines are provided by CLAPACK.`,
-          logo    : 'https://www.icl.utk.edu/sites/all/themes/icl/favicon.ico',
-          url     : 'http://icl.cs.utk.edu/lapack-for-windows/clapack/index.html'
-        },
-        {
-          title   : 'Armadillo',
-          descrip : `High level linear algebra subroutines are provided by Armadillo C++.`,
-          logo    : './licenses/armadillo_logo2.png',
-          url     : 'http://arma.sourceforge.net/'
-        },
-        {
-          title   : 'Emscripten',
-          descrip : `The C++ routines are compiled to WebAssembly using Emscripten.`,
-          logo    : 'https://kripken.github.io/emscripten-site/_static/Emscripten_logo_full.png',
-          url     : 'https://kripken.github.io/emscripten-site/'
-        },
-        {
-          title   : 'Vue',
-          descrip : `The frontend logic of this web application is implemented with Vue.`,
-          logo    : 'https://vuejs.org/images/logo.png',
-          url     : 'https://vuejs.org/'
-        }
-        ,
-        {
-          title   : 'Semantic UI',
-          descrip : `The frontend styles are provided by with the Semantic UI framework.`,
-          logo    : 'https://semantic-ui.com/images/logo.png',
-          url     : 'https://semantic-ui.com/'
-        }
-      ],
     }
   },
   computed: {
@@ -77,12 +38,6 @@ var HomeView = {
     onClicked : function() {
       this.$emit('load_pid');
     },
-    goToShop  : function() {
-      window.open(
-        'https://teespring.com/pidtuner',
-        '_blank' // open in a new window.
-      );
-    }
   },
 };
 

@@ -1,6 +1,13 @@
 (async function () { // IFFE
 // ------------------------------------------------------------------------
 
+// init PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+
 window.PidWorker = Comlink.wrap(new Worker('./pid/v1.0.6/pid_worker.js'));
 
 // init Vue

@@ -45,7 +45,7 @@
 					</p>
 				</div>
 				<div class="six wide right floated column">
-					<img class="ui large bordered rounded image home-centered" src="./assets/models/pid_block.svg" />
+					<img class="ui large bordered rounded image home-centered" src="./assets/models/pid_block.svg" alt="Shows basic PID control block diagram"/>
 				</div>
 			</div>
 		</div>
@@ -55,7 +55,7 @@
 		<div class="ui middle aligned stackable grid container">
 			<div class="row">
 				<div class="eight wide column">
-					<img class="ui large bordered rounded image home-centered" src="./assets/gifs/wizard.gif" />
+					<img class="ui large bordered rounded image home-centered" src="./assets/gifs/wizard.gif" alt="Shows step by step wizard animation"/>
 				</div>
 
 				<div class="six wide right floated column">
@@ -77,61 +77,5 @@
 
 		</div>
 	</div>
-
-	<div class="ui vertical stripe segment">
-		<div class="ui stackable grid container">
-			<div class="row">
-				<div class="eight wide column">
-					<h3 class="ui header">
-						Shop
-					</h3>
-					<p>
-						This website is free to use and runs entirely based on your support. Support us by buying a product from 
-						<a href="https://teespring.com/pidtuner" target="_blank">The Shop</a>, or by becoming a 
-						<a href="https://www.patreon.com/pidtuner" target="_blank">Sponsor</a>.
-					</p>
-				</div>
-				<div class="six wide right floated column" @click="goToShop()" style="cursor: pointer">
-					<img class="ui small bordered rounded image home-centered" src="https://vangogh.teespring.com/v3/image/rzL9pjHU48XGMrE7cWl6BGB0ltQ/480/560.jpg" />
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-	<div class="ui vertical stripe segment">
-		<div class="ui grid container">
-			<div class="row">
-				<h3 class="ui header">
-					Tech Stack
-				</h3>
-			</div>
-			<div class="row">
-				<p>
-					This web application would not have been possible without all the amazing projects listed below. Thank you!
-				</p>
-			</div>
-		</div>
-		<div class="ui grid container">
-		<div class="ui three doubling cards">
-				<a class="ui card home-tech-card" v-for="tstack in list_techstack" :href="tstack.url" target="_blank">
-					<div class="content home-tech-content">
-						<div class="ui stackable two column grid home-tech-grid" style="margin-top: auto; margin-bottom: auto;">
-							<div class="ui middle aligned column home-imgcard">
-								<img class="tiny ui image" :src="tstack.logo">
-							</div>
-							<div class="column">
-								<h4 class="ui header">{{ tstack.title }}</h4>
-								<div class="description">
-									{{ tstack.descrip }}
-								</div>
-							</div>
-						</div>
-					</div>
-				</a>
-		</div>
-		</div>
-	</div>
-
 
 </div>
