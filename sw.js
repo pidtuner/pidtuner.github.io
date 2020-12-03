@@ -1,6 +1,9 @@
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.0.0/workbox-sw.js');
 
 if (workbox) { 
+    // force dev build until https://github.com/GoogleChrome/workbox/issues/2686 gets fixed
+    workbox.setConfig({ debug: true });
+    // caching strategy
     workbox.precaching.precacheAndRoute([
         { url: 'index.html'                    , revision: '1.0.6' },
         { url: 'pid/v1.0.6/pid_tuner.js'       , revision: '1.0.6' },
