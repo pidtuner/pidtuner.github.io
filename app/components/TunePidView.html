@@ -24,8 +24,8 @@
 		         :value      ="gain.insync === undefined || gain.insync ? gain.val : gain.oldVal" 
 		         :readonly   ="!gain.editable" 
 		         :class      ="{ 'tune-pid-readonly' : !gain.editable }"
-		         @keyup.enter="gain.insync = true; updateGain(gain.name, $event.target.value)"
-		         @keyup="if($event.target.value != gain.val && (gain.insync === undefined || gain.insync)) { gain.insync = false; gain.oldVal = $event.target.value; }"
+		         @keyup.enter="syncLogicEnter($event, gain)"
+		         @keyup="syncLogicKeyUp($event, gain)"
 		  >
 		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
 			{{ gain.units }}

@@ -35,10 +35,12 @@ var PidTunerView = {
     dialog: { // NOTE : didn't put in data because data's keys are used to save to API
       type    : Object,
       required: false,
-      default: {
-        "title" : "",
-        "header" : "",
-        "content" : ""
+      default: function () {
+      	return {
+			"title" : "",
+			"header" : "",
+			"content" : ""
+      	};
       }
     }
   },
@@ -579,6 +581,19 @@ var PidTunerView = {
 			this.undo_stack.push(undoObj);
 		});   	
     }, 
+    stepLogic(step) {
+        if(this.current_step == step) { 
+            return; 
+		} 
+		this.current_step = step; 
+		this.step_loaded  = false; 
+		if(this.current_step == this.latest_step) { 
+		    this.next_enabled = false; 
+		} 
+		else { 
+		    this.next_enabled = true; 
+		}
+    },
   }, //methods
   computed: {
     undo_stack: {

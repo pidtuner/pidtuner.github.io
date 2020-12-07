@@ -153,7 +153,6 @@ var SelectModelView = {
     }, // output_chart_data
     internal_selected_model_params: function() {
       var params;
-      //var strListParams = []; 
       if(this.selected_type == '1stord') {
       	var k     = this.selected_params[0];
         var tao   = this.selected_params[1];
@@ -458,8 +457,74 @@ var SelectModelView = {
       return model_list;
     }, // getModelList
     async updateParam(name, value) {
-        console.log(name, value);
-    }, // updateGain
+        if(typeof value == "string") {
+			value = parseFloat(value);
+		}
+		var paramIndex = 0;
+		if(this.selected_type == '1stord') {
+			//var k     = this.selected_params[0];
+			//var tao   = this.selected_params[1];
+			//var theta = this.selected_params[2];
+			//var y0    = this.selected_params[3];
+			if     (name == 'k'    ) { paramIndex = 0; }
+			else if(name == 'tao'  ) { paramIndex = 1; }
+			else if(name == 'theta') { paramIndex = 2; }
+			else if(name == 'y0'   ) { paramIndex = 3; }
+			else { console.warn('Unknown param ', name); return; }
+		}
+		else if(this.selected_type == '2ndord') {
+			//var a1    = this.selected_params[0];
+			//var a2    = this.selected_params[1];
+			//var b     = this.selected_params[2];
+			//var theta = this.selected_params[3];
+			//var y0    = this.selected_params[4];
+			// frequency and damping
+			//var w     = Math.sqrt(-a1);
+			//var gi    = -a2/(2*w);
+			//var k     = -b/a1;
+		}
+		else if(this.selected_type == 'integ') {
+			//var k     = this.selected_params[0];
+			//var theta = this.selected_params[1];
+			//var y0    = this.selected_params[2];
+			if     (name == 'k'    ) { paramIndex = 0; }
+			else if(name == 'theta') { paramIndex = 1; }
+			else if(name == 'y0'   ) { paramIndex = 2; }
+			else { console.warn('Unknown param ', name); return; }
+		}
+		else if(this.selected_type == 'integlag') {
+			if     (name == 'k'    ) { paramIndex = 0; }
+			else if(name == 'tao'  ) { paramIndex = 1; }
+			else if(name == 'theta') { paramIndex = 2; }
+			else if(name == 'y0'   ) { paramIndex = 3; }
+			else { console.warn('Unknown param ', name); return; }
+		}
+		else if(this.selected_type == 'integdouble') {
+			//var k     = this.selected_params[0];
+			//var theta = this.selected_params[1];
+			//var y0    = this.selected_params[2];
+			if     (name == 'k'    ) { paramIndex = 0; }
+			else if(name == 'theta') { paramIndex = 1; }
+			else if(name == 'y0'   ) { paramIndex = 2; }
+			else { console.warn('Unknown param ', name); return; }
+		}
+		else {
+            console.warn('Unknown model.');
+            return;
+		}
+		Vue.set(this.selected_model.params, paramIndex, value);
+    }, // updateParam
+    syncLogicEnter(event, param) {
+    	param.insync = true; 
+    	this.updateParam(param.name, event.target.value);
+    },
+    syncLogicKeyUp(event, param) {
+    	// TODO : need to make internal_selected_model_params part of data or props for Vue to see it
+    	if(event.target.value != param.val && (param.insync === undefined || param.insync)) { 
+    	    param.insync = false; 
+    	    param.oldVal = event.target.value; 
+		}
+    },
   }, // methods
   watch: {
 	selected_model: function(){

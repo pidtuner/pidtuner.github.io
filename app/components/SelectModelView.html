@@ -62,8 +62,8 @@
 			 :value      ="param.insync === undefined || param.insync ? param.val : param.oldVal" 
 			 :readonly   ="!param.editable" 
 			 :class      ="{ 'tune-pid-readonly' : !param.editable }"
-			 @keyup.enter="param.insync = true; updateParam(param.name, $event.target.value)"
-			 @keyup="if($event.target.value != param.val && (param.insync === undefined || param.insync)) { param.insync = false; param.oldVal = $event.target.value; }"
+			 @keyup.enter="syncLogicEnter($event, param)"
+			 @keyup="syncLogicKeyUp($event, param)"
 	  >
 	  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
 		{{ param.units }}

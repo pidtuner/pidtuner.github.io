@@ -560,7 +560,17 @@ var TunePidView = {
 		else if (margin.name.includes('Pm')) {
 			return this.findMargin('Pm').val >= 30;
 		}
-	}
+	},
+	syncLogicEnter(event, gain) {
+    	gain.insync = true; 
+    	this.updateGain(gain.name, event.target.value);
+    },
+    syncLogicKeyUp(event, gain) {
+    	if(event.target.value != gain.val && (gain.insync === undefined || gain.insync)) { 
+    	    gain.insync = false; 
+    	    gain.oldVal = event.target.value; 
+		}
+    },
   }, // methods
   watch: {
 	gains_scale: function(){
