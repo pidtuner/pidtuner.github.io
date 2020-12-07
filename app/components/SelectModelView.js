@@ -152,15 +152,42 @@ var SelectModelView = {
       return out_chart_data;
     }, // output_chart_data
     internal_selected_model_params: function() {
-      var strListParams = []; 
+      var params;
+      //var strListParams = []; 
       if(this.selected_type == '1stord') {
       	var k     = this.selected_params[0];
         var tao   = this.selected_params[1];
         var theta = this.selected_params[2];
         //var y0    = this.selected_params[3];
-        strListParams.push(`k = ${k}`  );
-        strListParams.push(`τ = ${tao}`);
-        strListParams.push(`θ = ${theta}`);
+        params = [
+			{
+				name    : 'k',
+				val     : k,
+				units   : 'k',
+				descrip : 'Gain',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'tao',
+				val     : tao ,
+				units   : 'τ',
+				descrip : 'Time Constant',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'theta',
+				val     : theta ,
+				units   : 'θ',
+				descrip : 'Delay',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+		];
       }
       else if(this.selected_type == '2ndord') {
       	var a1    = this.selected_params[0];
@@ -172,39 +199,135 @@ var SelectModelView = {
         var w     = Math.sqrt(-a1);
         var gi    = -a2/(2*w);
         var k     = -b/a1;
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`ω = ${w}` );
-        strListParams.push(`ξ = ${gi}`);
-        strListParams.push(`θ = ${theta}`);
+        params = [
+			{
+				name    : 'k',
+				val     : k,
+				units   : 'k',
+				descrip : 'Gain',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'w',
+				val     : w ,
+				units   : 'ω',
+				descrip : 'Frequency',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'gi',
+				val     : gi ,
+				units   : 'ξ',
+				descrip : 'Damping Factor',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'theta',
+				val     : theta ,
+				units   : 'θ',
+				descrip : 'Delay',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+		];
       }
       else if(this.selected_type == 'integ') {
       	var k     = this.selected_params[0];
         var theta = this.selected_params[1];
         //var y0    = this.selected_params[2];
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`θ = ${theta}`);
+        params = [
+			{
+				name    : 'k',
+				val     : k,
+				units   : 'k',
+				descrip : 'Gain',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'theta',
+				val     : theta ,
+				units   : 'θ',
+				descrip : 'Delay',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+		];
       }
       else if(this.selected_type == 'integlag') {
       	var k     = this.selected_params[0];
         var tao   = this.selected_params[1];
         var theta = this.selected_params[2];
         //var y0    = this.selected_params[3];
-        strListParams.push(`k = ${k}`  );
-        strListParams.push(`τ = ${tao}`);
-        strListParams.push(`θ = ${theta}`);
+        params = [
+			{
+				name    : 'k',
+				val     : k,
+				units   : 'k',
+				descrip : 'Gain',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'tao',
+				val     : tao ,
+				units   : 'τ',
+				descrip : 'Time Constant',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'theta',
+				val     : theta ,
+				units   : 'θ',
+				descrip : 'Delay',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+		];
       }
       else if(this.selected_type == 'integdouble') {
         var k     = this.selected_params[0];
         var theta = this.selected_params[1];
         //var y0    = this.selected_params[2];
-        strListParams.push(`k = ${k}` );
-        strListParams.push(`θ = ${theta}`);
+        params = [
+			{
+				name    : 'k',
+				val     : k,
+				units   : 'k',
+				descrip : 'Gain',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+			{
+				name    : 'theta',
+				val     : theta ,
+				units   : 'θ',
+				descrip : 'Delay',
+				editable: true,
+				insync  : true,
+				oldVal  : ''
+			},
+		];
       }
       else {
-          strListParams.push('Unknown Model');
+          params = [];
       }
       // return array
-      return strListParams;
+      return params;
     },
     step_data : function() {
     	// [ALT]
@@ -333,7 +456,10 @@ var SelectModelView = {
       this.$emit('stepLoaded');
       // return
       return model_list;
-    }, // model_list
+    }, // getModelList
+    async updateParam(name, value) {
+        console.log(name, value);
+    }, // updateGain
   }, // methods
   watch: {
 	selected_model: function(){

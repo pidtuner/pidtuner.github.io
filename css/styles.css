@@ -325,6 +325,7 @@ MODEL STEP COMPONENT */
 
 .model-select-img-div {
   background: transparent !important;
+  margin: auto;
 }
 
 .model-select-cardhead {
