@@ -194,6 +194,12 @@ const PidWorker = {
 		};
     }, // getModelList
 
+    simulateModel(data) {
+
+    	// TODO : call pid.detrend_sim call from syncLogicEnter in SelectModelView
+
+    }, // simulateModel
+
     tunePID(data) {      
         var pid = WorkerGlobalScope.pid;   
         // get ts

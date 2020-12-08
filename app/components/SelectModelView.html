@@ -26,7 +26,7 @@
 			</div>
 			<!-- repeats -->
 			<div class="row step-select-item" v-for="model in model_list">
-			  <div class="fluid ui left labeled button" tabindex="0" @click="setModel(model); $emit('latestStep');">
+			  <div class="fluid ui left labeled button" tabindex="0" @click="modelClicked(model)">
 				<a class="ui basic right pointing label step-select-left">{{ getModelName(model.type) }}</a>
 				<div :class="{
 							   'ui'                : true,
@@ -51,7 +51,7 @@
 	<div 
 		:class="{ 'row ui fluid labeled input tune-pid-gain' : true, 'error' : param.editable && param.insync !== undefined && !param.insync }"
 		:data-tooltip="param.editable && param.insync !== undefined && !param.insync ? 'Press Enter' : false" data-position="right center" data-inverted=""
-		v-for="param in internal_selected_model_params">
+		v-for="param in params">
 	  <div class="ui label tune-pid-label step-selected-showifbig">
 		{{ param.descrip }}
 	  </div>

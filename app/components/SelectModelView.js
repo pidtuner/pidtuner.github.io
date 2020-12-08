@@ -53,7 +53,8 @@ var SelectModelView = {
 		selected_type    : '',
 		selected_params  : [],
 		selected_V       : 0,
-		selected_y       : []
+		selected_y       : [],
+		params           : [],
     }
   },
   mounted: async function() {
@@ -69,6 +70,8 @@ var SelectModelView = {
 	this.selected_y      = this.selected_model.y     ;
     // load or create model_list
   	this.model_list.copyFrom(await this.getModelList());  	
+  	//
+  	this.setModel(this.selected_model);
   },
   computed: {
     input_chart_data: function() {
@@ -151,183 +154,6 @@ var SelectModelView = {
       };
       return out_chart_data;
     }, // output_chart_data
-    internal_selected_model_params: function() {
-      var params;
-      if(this.selected_type == '1stord') {
-      	var k     = this.selected_params[0];
-        var tao   = this.selected_params[1];
-        var theta = this.selected_params[2];
-        //var y0    = this.selected_params[3];
-        params = [
-			{
-				name    : 'k',
-				val     : k,
-				units   : 'k',
-				descrip : 'Gain',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'tao',
-				val     : tao ,
-				units   : 'τ',
-				descrip : 'Time Constant',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'theta',
-				val     : theta ,
-				units   : 'θ',
-				descrip : 'Delay',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-		];
-      }
-      else if(this.selected_type == '2ndord') {
-      	var a1    = this.selected_params[0];
-        var a2    = this.selected_params[1];
-        var b     = this.selected_params[2];
-        var theta = this.selected_params[3];
-        //var y0    = this.selected_params[4];
-        // frequency and damping
-        var w     = Math.sqrt(-a1);
-        var gi    = -a2/(2*w);
-        var k     = -b/a1;
-        params = [
-			{
-				name    : 'k',
-				val     : k,
-				units   : 'k',
-				descrip : 'Gain',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'w',
-				val     : w ,
-				units   : 'ω',
-				descrip : 'Frequency',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'gi',
-				val     : gi ,
-				units   : 'ξ',
-				descrip : 'Damping Factor',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'theta',
-				val     : theta ,
-				units   : 'θ',
-				descrip : 'Delay',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-		];
-      }
-      else if(this.selected_type == 'integ') {
-      	var k     = this.selected_params[0];
-        var theta = this.selected_params[1];
-        //var y0    = this.selected_params[2];
-        params = [
-			{
-				name    : 'k',
-				val     : k,
-				units   : 'k',
-				descrip : 'Gain',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'theta',
-				val     : theta ,
-				units   : 'θ',
-				descrip : 'Delay',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-		];
-      }
-      else if(this.selected_type == 'integlag') {
-      	var k     = this.selected_params[0];
-        var tao   = this.selected_params[1];
-        var theta = this.selected_params[2];
-        //var y0    = this.selected_params[3];
-        params = [
-			{
-				name    : 'k',
-				val     : k,
-				units   : 'k',
-				descrip : 'Gain',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'tao',
-				val     : tao ,
-				units   : 'τ',
-				descrip : 'Time Constant',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'theta',
-				val     : theta ,
-				units   : 'θ',
-				descrip : 'Delay',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-		];
-      }
-      else if(this.selected_type == 'integdouble') {
-        var k     = this.selected_params[0];
-        var theta = this.selected_params[1];
-        //var y0    = this.selected_params[2];
-        params = [
-			{
-				name    : 'k',
-				val     : k,
-				units   : 'k',
-				descrip : 'Gain',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-			{
-				name    : 'theta',
-				val     : theta ,
-				units   : 'θ',
-				descrip : 'Delay',
-				editable: true,
-				insync  : true,
-				oldVal  : ''
-			},
-		];
-      }
-      else {
-          params = [];
-      }
-      // return array
-      return params;
-    },
     step_data : function() {
     	// [ALT]
     	return Math.ceil(this.uniform_time.length/this.max_chart_len);
@@ -351,14 +177,192 @@ var SelectModelView = {
 		}
 		return value.toFixed(2);
 	},
-	setModel(model) {
+	modelClicked(model) {
 		this.$emit('updateSelectedModel', model);
+		this.setModel(model);
+		// as soon as any range is selected, we can continue
+		this.$emit('enableNext');
+		this.$emit('latestStep');
+	},
+	setModel(model) {		
 		this.selected_type   = model.type  ;
 		this.selected_params = model.params;
 		this.selected_V      = model.V     ;
 		this.selected_y      = model.y     ;
-		// as soon as any range is selected, we can continue
-		this.$emit('enableNext');
+		// set params (array of objects)
+		this.params.splice(0, this.params.length);
+        if(this.selected_type == '1stord') {
+			var k     = this.selected_params[0];
+			var tao   = this.selected_params[1];
+			var theta = this.selected_params[2];
+			//var y0    = this.selected_params[3];
+			this.params.push(
+				{
+					name    : 'k',
+					val     : k,
+					units   : 'k',
+					descrip : 'Gain',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'tao',
+					val     : tao ,
+					units   : 'τ',
+					descrip : 'Time Constant',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'theta',
+					val     : theta ,
+					units   : 'θ',
+					descrip : 'Delay',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+			);
+		  }
+		  else if(this.selected_type == '2ndord') {
+			var a1    = this.selected_params[0];
+			var a2    = this.selected_params[1];
+			var b     = this.selected_params[2];
+			var theta = this.selected_params[3];
+			//var y0    = this.selected_params[4];
+			// frequency and damping
+			var w     = Math.sqrt(-a1);
+			var gi    = -a2/(2*w);
+			var k     = -b/a1;
+			this.params.push(
+				{
+					name    : 'k',
+					val     : k,
+					units   : 'k',
+					descrip : 'Gain',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'w',
+					val     : w ,
+					units   : 'ω',
+					descrip : 'Frequency',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'gi',
+					val     : gi ,
+					units   : 'ξ',
+					descrip : 'Damping Factor',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'theta',
+					val     : theta ,
+					units   : 'θ',
+					descrip : 'Delay',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+			);
+		  }
+		  else if(this.selected_type == 'integ') {
+			var k     = this.selected_params[0];
+			var theta = this.selected_params[1];
+			//var y0    = this.selected_params[2];
+			this.params.push(
+				{
+					name    : 'k',
+					val     : k,
+					units   : 'k',
+					descrip : 'Gain',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'theta',
+					val     : theta ,
+					units   : 'θ',
+					descrip : 'Delay',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+			);
+		  }
+		  else if(this.selected_type == 'integlag') {
+			var k     = this.selected_params[0];
+			var tao   = this.selected_params[1];
+			var theta = this.selected_params[2];
+			//var y0    = this.selected_params[3];
+			this.params.push(
+				{
+					name    : 'k',
+					val     : k,
+					units   : 'k',
+					descrip : 'Gain',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'tao',
+					val     : tao ,
+					units   : 'τ',
+					descrip : 'Time Constant',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'theta',
+					val     : theta ,
+					units   : 'θ',
+					descrip : 'Delay',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+			);
+		  }
+		  else if(this.selected_type == 'integdouble') {
+			var k     = this.selected_params[0];
+			var theta = this.selected_params[1];
+			//var y0    = this.selected_params[2];
+			this.params.push(
+				{
+					name    : 'k',
+					val     : k,
+					units   : 'k',
+					descrip : 'Gain',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+				{
+					name    : 'theta',
+					val     : theta ,
+					units   : 'θ',
+					descrip : 'Delay',
+					editable: true,
+					insync  : true,
+					oldVal  : ''
+				},
+			);
+		  }
+		  else {
+			  this.params.splice(0, this.params.length);
+		  }
 	},
 	getModelName(type) {
       if(type == '1stord') {
@@ -462,10 +466,6 @@ var SelectModelView = {
 		}
 		var paramIndex = 0;
 		if(this.selected_type == '1stord') {
-			//var k     = this.selected_params[0];
-			//var tao   = this.selected_params[1];
-			//var theta = this.selected_params[2];
-			//var y0    = this.selected_params[3];
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'tao'  ) { paramIndex = 1; }
 			else if(name == 'theta') { paramIndex = 2; }
@@ -482,11 +482,12 @@ var SelectModelView = {
 			//var w     = Math.sqrt(-a1);
 			//var gi    = -a2/(2*w);
 			//var k     = -b/a1;
+
+            // TODO
+            console.warn('TODO : Not implemented.');
+
 		}
 		else if(this.selected_type == 'integ') {
-			//var k     = this.selected_params[0];
-			//var theta = this.selected_params[1];
-			//var y0    = this.selected_params[2];
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'theta') { paramIndex = 1; }
 			else if(name == 'y0'   ) { paramIndex = 2; }
@@ -500,9 +501,6 @@ var SelectModelView = {
 			else { console.warn('Unknown param ', name); return; }
 		}
 		else if(this.selected_type == 'integdouble') {
-			//var k     = this.selected_params[0];
-			//var theta = this.selected_params[1];
-			//var y0    = this.selected_params[2];
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'theta') { paramIndex = 1; }
 			else if(name == 'y0'   ) { paramIndex = 2; }
@@ -516,11 +514,24 @@ var SelectModelView = {
     }, // updateParam
     syncLogicEnter(event, param) {
     	param.insync = true; 
-    	this.updateParam(param.name, event.target.value);
+    	var value = event.target.value;
+    	if(typeof value == "string") {
+			value = parseFloat(value);
+		}
+    	this.updateParam(param.name, value);
+    	Vue.set(param, 'val', value);
+    	this.$emit('latestStep');
+
+        // TODO : update simulation
+        console.warn('TODO : Not implemented.');
+
     },
     syncLogicKeyUp(event, param) {
-    	// TODO : need to make internal_selected_model_params part of data or props for Vue to see it
-    	if(event.target.value != param.val && (param.insync === undefined || param.insync)) { 
+    	var value = event.target.value;
+    	if(typeof value == "string") {
+			value = parseFloat(value);
+		}
+    	if(value != param.val && (param.insync === undefined || param.insync)) { 
     	    param.insync = false; 
     	    param.oldVal = event.target.value; 
 		}
