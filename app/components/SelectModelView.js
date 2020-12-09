@@ -58,20 +58,8 @@ var SelectModelView = {
     }
   },
   mounted: async function() {
-  	// if cache exists, enable next step
-  	if(this.cached_model_list.length > 0) {
-		// emit step loaded
-		this.$emit('enableNext');
-  	}
-  	//
-  	this.selected_type   = this.selected_model.type  ;
-	this.selected_params = this.selected_model.params;
-	this.selected_V      = this.selected_model.V     ;
-	this.selected_y      = this.selected_model.y     ;
     // load or create model_list
   	this.model_list.copyFrom(await this.getModelList());  	
-  	//
-  	this.setModel(this.selected_model);
   },
   computed: {
     input_chart_data: function() {
@@ -177,14 +165,15 @@ var SelectModelView = {
 		}
 		return value.toFixed(2);
 	},
-	modelClicked(model) {
-		this.$emit('updateSelectedModel', model);
+	modelClicked(model) {		
 		this.setModel(model);
 		// as soon as any range is selected, we can continue
-		this.$emit('enableNext');
 		this.$emit('latestStep');
 	},
 	setModel(model) {		
+	    this.$emit('updateSelectedModel', model);
+	    this.$emit('enableNext');
+	    this.selected_model  = model;
 		this.selected_type   = model.type  ;
 		this.selected_params = model.params;
 		this.selected_V      = model.V     ;
@@ -451,9 +440,12 @@ var SelectModelView = {
 		model_list.copyFrom(this.cached_model_list);
 	  }
 	  // check if need to set model
-	  if(!this.selected_y || this.selected_y.length == 0) {
+	  if(!this.selected_model.y || this.selected_model.y.length == 0) {
 		// set first model
 		this.setModel(model_list[0]);
+	  }
+	  else {
+	  	this.setModel(this.selected_model);
 	  }
       // emit step loaded
       this.$emit('stepLoaded');
@@ -512,7 +504,7 @@ var SelectModelView = {
 		}
 		Vue.set(this.selected_model.params, paramIndex, value);
     }, // updateParam
-    syncLogicEnter(event, param) {
+    syncLogicEnter: async function(event, param) {
     	param.insync = true; 
     	var value = event.target.value;
     	if(typeof value == "string") {
@@ -524,7 +516,14 @@ var SelectModelView = {
 
         // TODO : update simulation
         console.warn('TODO : Not implemented.');
+        return;
 
+        // update in worker
+		var result = await PidWorker.simulateModel({
+			uniform_time   : this.uniform_time  ,
+			uniform_input  : this.uniform_input ,
+			uniform_output : this.uniform_output,
+		});
     },
     syncLogicKeyUp(event, param) {
     	var value = event.target.value;
@@ -537,16 +536,6 @@ var SelectModelView = {
 		}
     },
   }, // methods
-  watch: {
-	selected_model: function(){
-		this.selected_type   = this.selected_model.type  ;
-		this.selected_params = this.selected_model.params;
-		this.selected_V      = this.selected_model.V     ;
-		this.selected_y      = this.selected_model.y     ;
-		// as soon as any range is selected, we can continue
-		this.$emit('enableNext');
-	},
-  }, // watch
 };
 
 // ------------------------------------------------------------------------
