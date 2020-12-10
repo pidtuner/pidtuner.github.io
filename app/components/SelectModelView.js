@@ -465,19 +465,34 @@ var SelectModelView = {
 			else { console.warn('Unknown param ', name); return; }
 		}
 		else if(this.selected_type == '2ndord') {
-			//var a1    = this.selected_params[0];
+			var a1    = this.selected_params[0];
 			//var a2    = this.selected_params[1];
 			//var b     = this.selected_params[2];
 			//var theta = this.selected_params[3];
 			//var y0    = this.selected_params[4];
 			// frequency and damping
-			//var w     = Math.sqrt(-a1);
+			var w     = Math.sqrt(-a1);
 			//var gi    = -a2/(2*w);
 			//var k     = -b/a1;
-
-            // TODO
-            console.warn('TODO : Not implemented.');
-
+            if(name == 'k') {
+                // b = -k * a1
+                value = -value * a1;
+                paramIndex = 2;
+            }
+			else if(name == 'w') { 
+			    // a1 = -w^2
+			    value = -value * value;
+			    paramIndex = 0;
+			}
+			else if(name == 'gi') { 
+			    // a2 = -2 * gi * w
+			    value = - 2 * value * w;
+			    paramIndex = 1;
+			}
+			else if(name == 'theta') { 
+			    paramIndex = 3;
+			}
+			else { console.warn('Unknown param ', name); return; }
 		}
 		else if(this.selected_type == 'integ') {
 			if     (name == 'k'    ) { paramIndex = 0; }
@@ -503,6 +518,7 @@ var SelectModelView = {
             return;
 		}
 		Vue.set(this.selected_model.params, paramIndex, value);
+		Vue.set(this.selected_params, paramIndex, value);
     }, // updateParam
     syncLogicEnter: async function(event, param) {
     	param.insync = true; 
@@ -513,17 +529,17 @@ var SelectModelView = {
     	this.updateParam(param.name, value);
     	Vue.set(param, 'val', value);
     	this.$emit('latestStep');
-
-        // TODO : update simulation
-        console.warn('TODO : Not implemented.');
-        return;
-
         // update in worker
 		var result = await PidWorker.simulateModel({
 			uniform_time   : this.uniform_time  ,
 			uniform_input  : this.uniform_input ,
 			uniform_output : this.uniform_output,
+			type           : this.selected_model.type,
+			params         : this.selected_model.params,
 		});
+		// update 
+		Vue.set(this.selected_model, 'y', result.y);
+		this.selected_y = result.y;
     },
     syncLogicKeyUp(event, param) {
     	var value = event.target.value;

@@ -6,7 +6,7 @@ if (workbox) {
     // caching strategy
     workbox.precaching.precacheAndRoute([
         { url: 'index.html'                    , revision: '1.0.6.0' },
-        { url: 'pid/v1.0.6/pid_tuner.js'       , revision: '1.0.6'   },
+        { url: 'pid/v1.0.6/pid_tuner.js'       , revision: '1.0.6.0' },
         { url: 'pid/v1.0.6/pid_tuner_wasm.wasm', revision: '1.0.6'   }
     ]);
     workbox.routing.registerRoute(

@@ -27,3 +27,5 @@ You can support PidTuner in many ways:
 Below is the complete list of [sponsors](https://www.patreon.com/pidtuner). Thank you all for making all this possible:
 
 * Jonas Nicolaysen
+
+* Reto Tschofenig ([ODT Informatik GmbH](https://odt.ch/))

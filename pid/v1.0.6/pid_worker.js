@@ -195,29 +195,34 @@ const PidWorker = {
     }, // getModelList
 
     simulateModel(data) {
-
         var pid = WorkerGlobalScope.pid;   
         // copy
 		var arma_time   = [];
 		var arma_input  = [];
 		var arma_output = [];
+		var arma_params = [];
 		for(var i = 0; i < data.uniform_time.length; i++) {
 	      arma_time  .push([[data.uniform_time  [i], 0]]);
 	      arma_input .push([[data.uniform_input [i], 0]]);
 	      arma_output.push([[data.uniform_output[i], 0]]);
 		}
+		for(var i = 0; i < data.params.length; i++) {
+	      arma_params.push([[data.params[i], 0]]);
+		}
 		// instantiate arma matrices
 		var t_uniform = Arma.CxMat.from_array(arma_time  );
 		var u_uniform = Arma.CxMat.from_array(arma_input );
 		var y_uniform = Arma.CxMat.from_array(arma_output);
-
-    	// TODO : call pid.detrend_sim call from syncLogicEnter in SelectModelView
-
+		var params    = Arma.CxMat.from_array(arma_params);
     	// detrended simulation
 		var y_detrend = new Arma.cx_mat();
 		params.resize(10, 1);
-		pid.detrend_sim(type, params, t_uniform, u_uniform, y_uniform, y_detrend);
-
+		pid.detrend_sim(data.type, params, t_uniform, u_uniform, y_uniform, y_detrend);
+        // create return value
+        var y = y_detrend.real().to_array().map(arr => arr[0]);
+        return {
+        	y: y,
+        }
     }, // simulateModel
 
     tunePID(data) {      
