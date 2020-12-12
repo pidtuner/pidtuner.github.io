@@ -132,8 +132,9 @@ var PidTunerView = {
       icon  : 'sitemap icon',
       info  : `
       The model type that best fits the step response data is automatically selected.
-      Nevertheless, it is possible to select a different model if it is known that the process
-      belongs to a different system class. Please select the preferred model.
+      It is possible to select a different model by clicking it.
+      Individual model parameters can be updated manually.
+      Press Enter after changing a parameter to update the simulation. 
       `
     };
     this.stepInfo['tune_pid'    ] = {
@@ -145,15 +146,7 @@ var PidTunerView = {
       These PID gains provide a starting point for tuning your PID.
       Feel free to change the PID gains as desired and see the resulting step 
       and disturbance response changing in real time.
-      Press Enter after changing a value to update the simulation. 
-      The PID implementation used in the simulation is the 
-      <a href="https://en.wikipedia.org/wiki/PID_controller#Discrete_implementation" target="_blank">
-		velocity algorithm
-      </a> 
-      in the 
-      <a href="https://en.wikipedia.org/wiki/PID_controller#Ideal_versus_standard_PID_form" target="_blank">
-		standard form
-      </a>.
+      Press Enter after changing a gain to update the simulation.
       `
     };
     // create dexie db 

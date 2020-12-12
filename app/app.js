@@ -38,24 +38,9 @@ window.mainVue = new Vue({
             icon : "linkedin"
           },
           {
-            name : "twitter",
-            url  : "https://twitter.com/pidtuner",
-            icon : "twitter square"
-          },
-          {
-            name : "reddit",
-            url  : "https://www.reddit.com/user/pidtuner",
-            icon : "reddit square"
-          },
-          {
             name : "github",
             url  : "https://github.com/pidtuner/pidtuner.github.io",
             icon : "github"
-          },
-          {
-            name : "hackernews",
-            url  : "https://news.ycombinator.com/user?id=pidtuner",
-            icon : "hacker news square"
           },
           {
             name : "patreon",

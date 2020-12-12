@@ -332,6 +332,15 @@ MODEL STEP COMPONENT */
   font-size: medium;
 }
 
+.model-select-divider {
+  margin-top: 5px !important;
+  margin-bottom: 0 !important;
+}
+
+.step-select-reset {
+  padding-top: 0 !important;
+}
+
 /* ***********************************************************************
 TUNE PID COMPONENT */
 

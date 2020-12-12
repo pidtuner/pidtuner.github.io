@@ -15,9 +15,9 @@
 	  </div>
 	</div>
 
-	<div class="ui divider"></div>
+	<div class="ui divider model-select-divider"></div>
 
-	<div class="row select-step-range">
+	<div class="row step-select-selected-row">
 		<div class="ui one column grid step-select-steps">
 			<div class="row step-select-item">
 			<h4 class="ui center aligned header">
@@ -26,7 +26,7 @@
 			</div>
 			<!-- repeats -->
 			<div class="row step-select-item" v-for="model in model_list">
-			  <div class="fluid ui left labeled button" tabindex="0" @click="modelClicked(model)">
+			  <div class="fluid ui left labeled button" tabindex="0" @click="setModel(model)">
 				<a class="ui basic right pointing label step-select-left">{{ getModelName(model.type) }}</a>
 				<div :class="{
 							   'ui'                : true,
@@ -40,17 +40,25 @@
 		</div>
 	</div>
 
-	<div class="ui divider"></div>
+	<div class="row step-select-reset">
+		<button class="fluid ui button" @click="resetModels()">
+			Reset Models
+		</button>
+	</div>
+
+
+	<div class="ui divider model-select-divider"></div>
 
 	<div class="row step-select-selected-row">
 		<h4 class="ui center aligned header">
 			Model Parameters
 		</h4>
 	</div>
-
 	<div 
 		:class="{ 'row ui fluid labeled input tune-pid-gain' : true, 'error' : param.editable && param.insync !== undefined && !param.insync }"
-		:data-tooltip="param.editable && param.insync !== undefined && !param.insync ? 'Press Enter' : false" data-position="right center" data-inverted=""
+		:data-tooltip  = "param.editable && param.insync !== undefined && !param.insync ? 'Press Enter' : false" 
+		 data-position = "right center" 
+		 data-inverted = ""		 
 		v-for="param in params">
 	  <div class="ui label tune-pid-label step-selected-showifbig">
 		{{ param.descrip }}
@@ -58,11 +66,12 @@
 	  <div class="ui label tune-pid-label step-selected-showifsmall">
 		{{ param.name }}
 	  </div>
-	  <input type        ="number" 
-			 :value      ="param.insync === undefined || param.insync ? param.val : param.oldVal" 
-			 :readonly   ="!param.editable" 
-			 :class      ="{ 'tune-pid-readonly' : !param.editable }"
-			 @keyup.enter="syncLogicEnter($event, param)"
+	  <input type        = "number"
+	         step        = "any"
+			 :value      = "param.insync === undefined || param.insync ? param.val : param.oldVal" 
+			 :readonly   = "!param.editable" 			 
+			 :class      = "{ 'tune-pid-readonly' : !param.editable }"
+			 @keyup.enter= "syncLogicEnter($event, param)"
 			 @keyup="syncLogicKeyUp($event, param)"
 	  >
 	  <div class="ui basic label tune-pid-label-units step-selected-showifbig">

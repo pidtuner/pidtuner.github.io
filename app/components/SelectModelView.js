@@ -161,19 +161,17 @@ var SelectModelView = {
 		}
 		return value.toFixed(2);
 	},
-	modelClicked(model) {		
-		this.setModel(model);
-		// as soon as any range is selected, we can continue
-		this.$emit('latestStep');
-	},
 	setModel(model) {	
+	    // signal that need to recompute next step, because this step is the latest modified step
+	    this.$emit('latestStep');
 	    // this update is async, because we cannot just set selected_model
 	    // so we pass it up with $emit and then wait for it in a watch which
 	    // then calls this.modelUpdated
 	    this.$emit('updateSelectedModel', model);
-	    this.$emit('enableNext');
 	},
-	modelUpdated() {
+	modelUpdated() {		
+		// as soon as any model is selected, we can continue
+		this.$emit('enableNext');		
 		// set params (array of objects)
 		this.params.splice(0, this.params.length);
         if(this.selected_model.type == '1stord') {
@@ -443,7 +441,7 @@ var SelectModelView = {
 	  else {
 	  	this.modelUpdated();
 	  }
-      // emit step loaded
+      // emit step loaded (stop loading animation)
       this.$emit('stepLoaded');
       // return
       return model_list;
@@ -514,7 +512,6 @@ var SelectModelView = {
             return;
 		}
 		Vue.set(this.selected_model.params, paramIndex, value);
-		Vue.set(this.selected_model.params, paramIndex, value);
     }, // updateParam
     syncLogicEnter: async function(event, param) {
     	param.insync = true; 
@@ -546,6 +543,15 @@ var SelectModelView = {
     	    param.insync = false; 
     	    param.oldVal = event.target.value; 
 		}
+    },
+    resetModels: async function() {
+    	// emit step paused (start loading animation)
+        this.$emit('stepPaused');
+    	// clear cache
+    	this.cached_model_list.splice(0, this.cached_model_list.length);
+    	this.selected_model.y.splice(0, this.selected_model.y.length);
+    	// load or create model_list
+  	    this.model_list.copyFrom(await this.getModelList());
     },
   }, // methods
   watch: {

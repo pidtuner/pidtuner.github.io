@@ -12,7 +12,9 @@
 
 		<div 
 		    :class="{ 'row ui fluid labeled input tune-pid-gain' : true, 'error' : gain.editable && gain.insync !== undefined && !gain.insync }"
-		    :data-tooltip="gain.editable && gain.insync !== undefined && !gain.insync ? 'Press Enter' : false" data-position="right center" data-inverted=""
+		    :data-tooltip  = "gain.editable && gain.insync !== undefined && !gain.insync ? 'Press Enter' : false" 
+		     data-position = "right center" 
+		     data-inverted = ""
 		    v-for="gain in pid_gains">
 		  <div class="ui label tune-pid-label step-selected-showifbig">
 			{{ gain.descrip }}
@@ -20,10 +22,11 @@
 		  <div class="ui label tune-pid-label step-selected-showifsmall">
 			{{ gain.name }}
 		  </div>
-		  <input type        ="number" 
-		         :value      ="gain.insync === undefined || gain.insync ? gain.val : gain.oldVal" 
-		         :readonly   ="!gain.editable" 
-		         :class      ="{ 'tune-pid-readonly' : !gain.editable }"
+		  <input type        = "number" 
+		         step        = "any"
+		         :value      = "gain.insync === undefined || gain.insync ? gain.val : gain.oldVal" 
+		         :readonly   = "!gain.editable" 
+		         :class      = "{ 'tune-pid-readonly' : !gain.editable }"
 		         @keyup.enter="syncLogicEnter($event, gain)"
 		         @keyup="syncLogicKeyUp($event, gain)"
 		  >
@@ -122,13 +125,11 @@
 		  <div class="ui label tune-pid-label step-selected-showifsmall">
 			{{ margin.name }}
 		  </div>
-		  <input readonly class="tune-pid-readonly" type="number" v-model="margin.val">
+		  <input readonly class="tune-pid-readonly" type="text" :value="margin.val">
 		  <div class="ui basic label tune-pid-label-units step-selected-showifbig">
 			{{ margin.units }}
 		  </div>
 		</div>
-
-
 
     </div>
   </div>

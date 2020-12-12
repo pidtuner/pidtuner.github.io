@@ -159,19 +159,11 @@ const PidWorker = {
 		                                  arma_models[4]);
 		// create output array
 		var model_list = [];
-		var j = 0;
 		for(var i = 0; i < arma_models.length; i++) {
 	      // create output sim
 	      var type   = arma_models[i].get_type();
 	      var params = arma_models[i].get_params();
 	      var Voptim = arma_models[i].get_V().real().to_array()[0][0];
-	      // check if should be added
-	      if(i != 0 && !(arma_models[0].get_type() == '2ndord' && type == '1stord') && 
-	         model_list[j-1].V < (1e-1)*Voptim) {
-	      	continue;
-	      }
-	      // increase number of good models
-	      j++;
 	      // detrended simulation
 	      var y_detrend = new Arma.cx_mat();
 	      params.resize(10, 1);
