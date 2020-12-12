@@ -170,10 +170,14 @@ var SelectModelView = {
 		// as soon as any range is selected, we can continue
 		this.$emit('latestStep');
 	},
-	setModel(model) {		
+	setModel(model) {	
+	    // this update is async, because we cannot just set selected_model
+	    // so we pass it up with $emit and then wait for it in a watch which
+	    // then calls this.modelUpdated
 	    this.$emit('updateSelectedModel', model);
 	    this.$emit('enableNext');
-	    this.selected_model  = model;
+	},
+	modelUpdated(model) {
 		this.selected_type   = model.type  ;
 		this.selected_params = model.params;
 		this.selected_V      = model.V     ;
@@ -445,7 +449,7 @@ var SelectModelView = {
 		this.setModel(model_list[0]);
 	  }
 	  else {
-	  	this.setModel(this.selected_model);
+	  	this.modelUpdated(this.selected_model);
 	  }
       // emit step loaded
       this.$emit('stepLoaded');
@@ -552,6 +556,11 @@ var SelectModelView = {
 		}
     },
   }, // methods
+  watch: {
+  	selected_model: function() {
+  		this.modelUpdated(this.selected_model);
+  	}
+  } // watch
 };
 
 // ------------------------------------------------------------------------
