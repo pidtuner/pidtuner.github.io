@@ -50,10 +50,6 @@ var SelectModelView = {
     return {
 		max_chart_len    : 300,
 		model_list       : [],
-		selected_type    : '',
-		selected_params  : [],
-		selected_V       : 0,
-		selected_y       : [],
 		params           : [],
     }
   },
@@ -111,10 +107,10 @@ var SelectModelView = {
 	  		x : this.uniform_time [idx],
 	  		y : this.uniform_output[idx]
 	  	});
-	  	if(this.selected_y && this.selected_y.length > 0) {
+	  	if(this.selected_model.y && this.selected_model.y.length > 0) {
 			out_data_selected.push({
 				x : this.uniform_time [idx],
-				y : this.selected_y[idx]
+				y : this.selected_model.y[idx]
 			});
 	  	}
 	  	if(idx == this.uniform_time.length-1) {
@@ -177,18 +173,14 @@ var SelectModelView = {
 	    this.$emit('updateSelectedModel', model);
 	    this.$emit('enableNext');
 	},
-	modelUpdated(model) {
-		this.selected_type   = model.type  ;
-		this.selected_params = model.params;
-		this.selected_V      = model.V     ;
-		this.selected_y      = model.y     ;
+	modelUpdated() {
 		// set params (array of objects)
 		this.params.splice(0, this.params.length);
-        if(this.selected_type == '1stord') {
-			var k     = this.selected_params[0];
-			var tao   = this.selected_params[1];
-			var theta = this.selected_params[2];
-			//var y0    = this.selected_params[3];
+        if(this.selected_model.type == '1stord') {
+			var k     = this.selected_model.params[0];
+			var tao   = this.selected_model.params[1];
+			var theta = this.selected_model.params[2];
+			//var y0    = this.selected_model.params[3];
 			this.params.push(
 				{
 					name    : 'k',
@@ -219,12 +211,12 @@ var SelectModelView = {
 				},
 			);
 		  }
-		  else if(this.selected_type == '2ndord') {
-			var a1    = this.selected_params[0];
-			var a2    = this.selected_params[1];
-			var b     = this.selected_params[2];
-			var theta = this.selected_params[3];
-			//var y0    = this.selected_params[4];
+		  else if(this.selected_model.type == '2ndord') {
+			var a1    = this.selected_model.params[0];
+			var a2    = this.selected_model.params[1];
+			var b     = this.selected_model.params[2];
+			var theta = this.selected_model.params[3];
+			//var y0    = this.selected_model.params[4];
 			// frequency and damping
 			var w     = Math.sqrt(-a1);
 			var gi    = -a2/(2*w);
@@ -268,10 +260,10 @@ var SelectModelView = {
 				},
 			);
 		  }
-		  else if(this.selected_type == 'integ') {
-			var k     = this.selected_params[0];
-			var theta = this.selected_params[1];
-			//var y0    = this.selected_params[2];
+		  else if(this.selected_model.type == 'integ') {
+			var k     = this.selected_model.params[0];
+			var theta = this.selected_model.params[1];
+			//var y0    = this.selected_model.params[2];
 			this.params.push(
 				{
 					name    : 'k',
@@ -293,11 +285,11 @@ var SelectModelView = {
 				},
 			);
 		  }
-		  else if(this.selected_type == 'integlag') {
-			var k     = this.selected_params[0];
-			var tao   = this.selected_params[1];
-			var theta = this.selected_params[2];
-			//var y0    = this.selected_params[3];
+		  else if(this.selected_model.type == 'integlag') {
+			var k     = this.selected_model.params[0];
+			var tao   = this.selected_model.params[1];
+			var theta = this.selected_model.params[2];
+			//var y0    = this.selected_model.params[3];
 			this.params.push(
 				{
 					name    : 'k',
@@ -328,10 +320,10 @@ var SelectModelView = {
 				},
 			);
 		  }
-		  else if(this.selected_type == 'integdouble') {
-			var k     = this.selected_params[0];
-			var theta = this.selected_params[1];
-			//var y0    = this.selected_params[2];
+		  else if(this.selected_model.type == 'integdouble') {
+			var k     = this.selected_model.params[0];
+			var theta = this.selected_model.params[1];
+			//var y0    = this.selected_model.params[2];
 			this.params.push(
 				{
 					name    : 'k',
@@ -449,7 +441,7 @@ var SelectModelView = {
 		this.setModel(model_list[0]);
 	  }
 	  else {
-	  	this.modelUpdated(this.selected_model);
+	  	this.modelUpdated();
 	  }
       // emit step loaded
       this.$emit('stepLoaded');
@@ -461,19 +453,19 @@ var SelectModelView = {
 			value = parseFloat(value);
 		}
 		var paramIndex = 0;
-		if(this.selected_type == '1stord') {
+		if(this.selected_model.type == '1stord') {
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'tao'  ) { paramIndex = 1; }
 			else if(name == 'theta') { paramIndex = 2; }
 			else if(name == 'y0'   ) { paramIndex = 3; }
 			else { console.warn('Unknown param ', name); return; }
 		}
-		else if(this.selected_type == '2ndord') {
-			var a1    = this.selected_params[0];
-			//var a2    = this.selected_params[1];
-			//var b     = this.selected_params[2];
-			//var theta = this.selected_params[3];
-			//var y0    = this.selected_params[4];
+		else if(this.selected_model.type == '2ndord') {
+			var a1    = this.selected_model.params[0];
+			//var a2    = this.selected_model.params[1];
+			//var b     = this.selected_model.params[2];
+			//var theta = this.selected_model.params[3];
+			//var y0    = this.selected_model.params[4];
 			// frequency and damping
 			var w     = Math.sqrt(-a1);
 			//var gi    = -a2/(2*w);
@@ -498,20 +490,20 @@ var SelectModelView = {
 			}
 			else { console.warn('Unknown param ', name); return; }
 		}
-		else if(this.selected_type == 'integ') {
+		else if(this.selected_model.type == 'integ') {
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'theta') { paramIndex = 1; }
 			else if(name == 'y0'   ) { paramIndex = 2; }
 			else { console.warn('Unknown param ', name); return; }
 		}
-		else if(this.selected_type == 'integlag') {
+		else if(this.selected_model.type == 'integlag') {
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'tao'  ) { paramIndex = 1; }
 			else if(name == 'theta') { paramIndex = 2; }
 			else if(name == 'y0'   ) { paramIndex = 3; }
 			else { console.warn('Unknown param ', name); return; }
 		}
-		else if(this.selected_type == 'integdouble') {
+		else if(this.selected_model.type == 'integdouble') {
 			if     (name == 'k'    ) { paramIndex = 0; }
 			else if(name == 'theta') { paramIndex = 1; }
 			else if(name == 'y0'   ) { paramIndex = 2; }
@@ -522,7 +514,7 @@ var SelectModelView = {
             return;
 		}
 		Vue.set(this.selected_model.params, paramIndex, value);
-		Vue.set(this.selected_params, paramIndex, value);
+		Vue.set(this.selected_model.params, paramIndex, value);
     }, // updateParam
     syncLogicEnter: async function(event, param) {
     	param.insync = true; 
@@ -543,7 +535,7 @@ var SelectModelView = {
 		});
 		// update 
 		Vue.set(this.selected_model, 'y', result.y);
-		this.selected_y = result.y;
+		this.selected_model.y = result.y;
     },
     syncLogicKeyUp(event, param) {
     	var value = event.target.value;
@@ -558,7 +550,7 @@ var SelectModelView = {
   }, // methods
   watch: {
   	selected_model: function() {
-  		this.modelUpdated(this.selected_model);
+  		this.modelUpdated();
   	}
   } // watch
 };

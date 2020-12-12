@@ -5,13 +5,13 @@
 
 	<div class="row step-select-selected-row">
 		<h4 class="ui center aligned header">
-			{{ getModelName(selected_type) }}
+			{{ getModelName(this.selected_model.type) }}
 		</h4>
 	</div>
 
 	<div class="row step-select-selected-row">
 	  <div class="image model-select-img-div">
-		<p v-html="getModelEquation(selected_type)"></p>
+		<p v-html="getModelEquation(this.selected_model.type)"></p>
 	  </div>
 	</div>
 
@@ -33,8 +33,8 @@
 							   'icon'              : true, 
 							   'button'            : true,
 							   'step-select-right' : true,
-							   'blue'              : selected_type == model.type
-							   }">Select<i class="check icon" v-show="selected_type == model.type"></i></div>
+							   'blue'              : selected_model.type == model.type
+							   }">Select<i class="check icon" v-show="selected_model.type == model.type"></i></div>
 			  </div>
 			</div>
 		</div>
