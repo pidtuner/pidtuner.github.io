@@ -29,3 +29,5 @@ Below is the complete list of [sponsors](https://www.patreon.com/pidtuner). Than
 * Jonas Nicolaysen
 
 * Reto Tschofenig ([ODT Informatik GmbH](https://odt.ch/))
+
+* Tero Kontkanen ([Granite Devices](https://granitedevices.com/))
