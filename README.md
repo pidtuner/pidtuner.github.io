@@ -12,6 +12,12 @@ When reporting an issue, please follow the guidelines below:
 
 Please be patient and nice, remember that we do this on our free time, we also have demanding jobs, yet we want to keep this tool free. If you want us to give a higher priority to your issue, please consider becoming a [sponsor](https://www.patreon.com/pidtuner).
 
+# Tutorials
+
+There are some short tutorials on the youtube channel that you can follow if you want to know how the tool can be used on a real life project:
+
+* <https://youtube.com/playlist?list=PL4HgJuRTDu6muJ_VJOgZYH0omMQnJc8_x>
+
 # Support
 
 You can support PidTuner in many ways:
@@ -31,3 +37,5 @@ Below is the complete list of [sponsors](https://www.patreon.com/pidtuner). Than
 * Reto Tschofenig ([ODT Informatik GmbH](https://odt.ch/))
 
 * Tero Kontkanen ([Granite Devices](https://granitedevices.com/))
+
+* Daniel Agar
