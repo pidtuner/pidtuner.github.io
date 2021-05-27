@@ -39,3 +39,5 @@ Below is the complete list of [sponsors](https://www.patreon.com/pidtuner). Than
 * Tero Kontkanen ([Granite Devices](https://granitedevices.com/))
 
 * Daniel Agar
+
+* Roman Kuraev
